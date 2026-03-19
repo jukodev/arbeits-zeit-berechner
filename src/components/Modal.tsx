@@ -38,7 +38,7 @@ export default function Modal({
 			/>
 
 			{/* Sheet */}
-			<div className="relative w-full max-w-sm rounded-3xl border border-white/25 bg-white/70 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.12)] backdrop-blur-3xl backdrop-saturate-150 dark:bg-gray-900/80 dark:border-white/[0.08] dark:shadow-[0_8px_40px_-8px_rgba(0,0,0,0.5)] animate-slide-up">
+			<div className="relative w-full max-w-sm rounded-2xl bg-white shadow-xl dark:bg-[#1c1c1e] animate-slide-up">
 				{/* Header */}
 				<div className="flex items-center justify-between px-5 pt-5 pb-2">
 					<h3 className="text-lg font-semibold text-gray-900 dark:text-white">

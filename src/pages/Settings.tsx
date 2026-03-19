@@ -63,10 +63,10 @@ export default function Settings() {
 							<button
 								key={key}
 								onClick={() => toggleDay(key)}
-								className={`rounded-2xl py-2.5 text-xs font-semibold transition-all active:scale-95 ${
+								className={`rounded-xl py-2.5 text-xs font-semibold transition-all active:scale-95 ${
 									active
-										? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-										: "bg-black/[0.04] text-gray-400 dark:bg-white/[0.06] dark:text-gray-500"
+										? "bg-blue-500 text-white"
+										: "bg-gray-100 text-gray-400 dark:bg-white/[0.06] dark:text-gray-500"
 								}`}>
 								{label}
 							</button>
@@ -93,10 +93,10 @@ export default function Settings() {
 							<button
 								key={value}
 								onClick={() => updateSettings({ theme: value })}
-								className={`flex flex-col items-center gap-1.5 rounded-2xl py-3 text-xs font-semibold transition-all active:scale-95 ${
+								className={`flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${
 									active
-										? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
-										: "bg-black/[0.04] text-gray-500 dark:bg-white/[0.06] dark:text-gray-400"
+										? "bg-blue-500 text-white"
+										: "bg-gray-100 text-gray-500 dark:bg-white/[0.06] dark:text-gray-400"
 								}`}>
 								<Icon size={20} />
 								{label}

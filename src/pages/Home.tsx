@@ -171,25 +171,20 @@ export default function Home() {
 			{/* Buzzer */}
 			<button
 				onClick={handleBuzzerPress}
-				className={`group relative mt-4 flex h-44 w-44 items-center justify-center rounded-full shadow-[0_4px_32px_-4px] transition-all duration-200 active:scale-95
+				className={`mt-2 flex h-40 w-40 items-center justify-center rounded-full transition-transform duration-200 active:scale-95
           ${
 				session
-					? "bg-red-500/10 shadow-red-500/15 ring-1 ring-red-400/25"
-					: "bg-green-500/10 shadow-green-500/15 ring-1 ring-green-400/25"
+					? "bg-red-50 dark:bg-red-500/10"
+					: "bg-green-50 dark:bg-green-500/10"
 			}
         `}>
-				<div
-					className={`absolute inset-2 rounded-full backdrop-blur-xl ${
-						session ? "bg-red-500/20" : "bg-green-500/20"
-					}`}
-				/>
-				<div className="relative flex flex-col items-center gap-2">
+				<div className="flex flex-col items-center gap-2">
 					{session ? (
-						<Square size={48} className="text-red-400" />
+						<Square size={44} className="text-red-500" />
 					) : (
-						<Play size={48} className="ml-1 text-green-400" />
+						<Play size={44} className="ml-1 text-green-500" />
 					)}
-					<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+					<span className="text-sm font-medium text-gray-500 dark:text-gray-400">
 						{session ? "Stoppen" : "Starten"}
 					</span>
 				</div>
@@ -259,7 +254,7 @@ export default function Home() {
 							<div
 								key={i}
 								className={`flex flex-col items-center rounded-lg py-1.5 text-center text-[10px] transition-colors
-                  ${isTodayDay ? "bg-blue-500/15 ring-1 ring-blue-400/30" : ""}
+                  ${isTodayDay ? "bg-blue-50 dark:bg-blue-500/10" : ""}
                   ${!active ? "opacity-40" : ""}
                 `}>
 								<span className="font-medium text-gray-500 dark:text-gray-400">
@@ -293,12 +288,12 @@ export default function Home() {
 					<>
 						<button
 							onClick={() => setShowStartModal(false)}
-							className="flex-1 rounded-2xl bg-black/[0.04] px-4 py-2.5 text-sm font-medium text-gray-700 active:bg-black/[0.08] dark:bg-white/[0.08] dark:text-gray-300 dark:active:bg-white/[0.12]">
+							className="flex-1 rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 active:bg-gray-200 dark:bg-white/[0.08] dark:text-gray-300 dark:active:bg-white/[0.12]">
 							Abbrechen
 						</button>
 						<button
 							onClick={confirmStart}
-							className="flex-1 rounded-2xl bg-green-500 px-4 py-2.5 text-sm font-medium text-white active:bg-green-600">
+							className="flex-1 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-medium text-white active:bg-blue-600">
 							Starten
 						</button>
 					</>
@@ -323,12 +318,12 @@ export default function Home() {
 					<>
 						<button
 							onClick={() => setShowStopModal(false)}
-							className="flex-1 rounded-2xl bg-black/[0.04] px-4 py-2.5 text-sm font-medium text-gray-700 active:bg-black/[0.08] dark:bg-white/[0.08] dark:text-gray-300 dark:active:bg-white/[0.12]">
+							className="flex-1 rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 active:bg-gray-200 dark:bg-white/[0.08] dark:text-gray-300 dark:active:bg-white/[0.12]">
 							Abbrechen
 						</button>
 						<button
 							onClick={confirmStop}
-							className="flex-1 rounded-2xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white active:bg-red-600">
+							className="flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white active:bg-red-600">
 							Beenden
 						</button>
 					</>
@@ -355,7 +350,7 @@ export default function Home() {
 							onClick={() =>
 								setBreakMinutes(b => Math.max(0, b - 5))
 							}
-							className="rounded-full bg-black/[0.04] p-1.5 active:bg-black/[0.08] dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
+							className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
 							<Minus
 								size={16}
 								className="text-gray-600 dark:text-gray-300"
@@ -366,7 +361,7 @@ export default function Home() {
 						</span>
 						<button
 							onClick={() => setBreakMinutes(b => b + 5)}
-							className="rounded-full bg-black/[0.04] p-1.5 active:bg-black/[0.08] dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
+							className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
 							<Plus
 								size={16}
 								className="text-gray-600 dark:text-gray-300"
@@ -374,7 +369,7 @@ export default function Home() {
 						</button>
 					</div>
 
-					<div className="rounded-2xl bg-blue-500/[0.08] px-4 py-2">
+					<div className="rounded-xl bg-blue-50 px-4 py-2 dark:bg-blue-500/10">
 						<span className="text-sm text-blue-600 dark:text-blue-400">
 							Arbeitszeit:{" "}
 							<strong>{formatDuration(stopDuration)}</strong>

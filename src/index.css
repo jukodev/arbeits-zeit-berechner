@@ -17,18 +17,28 @@
 	}
 }
 
-/* Base styles */
+/* Base styles — prevent iOS overscroll / zoom */
 html {
 	-webkit-tap-highlight-color: transparent;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	height: 100%;
+	overflow: hidden;
+	touch-action: manipulation;
 }
 
 body {
 	font-family:
 		-apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Display",
 		"Helvetica Neue", Arial, sans-serif;
+	height: 100%;
+	overflow: hidden;
 	overscroll-behavior: none;
+}
+
+#root {
+	height: 100%;
+	overflow: hidden;
 }
 
 /* PWA standalone: prevent text selection on UI elements */
@@ -56,6 +66,20 @@ body {
 
 .animate-slide-up {
 	animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Full-screen slide-up for stacked screens */
+@keyframes slide-up-full {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+.animate-slide-up-full {
+	animation: slide-up-full 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Scrollbar hiding for cleaner mobile look */

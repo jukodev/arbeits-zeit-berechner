@@ -14,8 +14,7 @@ export default function GlassCard({
 	return (
 		<div
 			onClick={onClick}
-			className={`rounded-3xl border border-white/20 bg-white/45 shadow-[0_2px_24px_-4px_rgba(0,0,0,0.08)] backdrop-blur-2xl
-        dark:border-white/[0.08] dark:bg-white/[0.06] dark:shadow-[0_2px_24px_-4px_rgba(0,0,0,0.3)]
+			className={`rounded-2xl bg-white dark:bg-[#1c1c1e]
         ${onClick ? "cursor-pointer active:scale-[0.98] transition-transform" : ""}
         ${className}`}>
 			{children}
