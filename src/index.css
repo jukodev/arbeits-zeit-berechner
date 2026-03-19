@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode for manual toggle */
+@custom-variant dark (&:is(.dark *));
+
+/* iOS safe areas for standalone PWA */
+@supports (padding-top: env(safe-area-inset-top)) {
+	.safe-top {
+		padding-top: env(safe-area-inset-top);
+	}
+	.safe-bottom {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+	.safe-x {
+		padding-left: env(safe-area-inset-left);
+		padding-right: env(safe-area-inset-right);
+	}
+}
+
+/* Base styles */
+html {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family:
+		-apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Display",
+		"Helvetica Neue", Arial, sans-serif;
+	overscroll-behavior: none;
+}
+
+/* PWA standalone: prevent text selection on UI elements */
+@media (display-mode: standalone) {
+	button,
+	a,
+	label,
+	nav {
+		-webkit-user-select: none;
+		user-select: none;
+	}
+}
+
+/* Modal slide-up animation */
+@keyframes slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(32px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.animate-slide-up {
+	animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scrollbar hiding for cleaner mobile look */
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* Input number spinner hide on iOS/mobile */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+input[type="number"] {
+	-moz-appearance: textfield;
+}
+
+/* ---- iOS 26 Liquid Glass Scroll Picker ---- */
+.scroll-picker {
+	position: relative;
+	height: 150px;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		transparent 0%,
+		black 35%,
+		black 65%,
+		transparent 100%
+	);
+	mask-image: linear-gradient(
+		to bottom,
+		transparent 0%,
+		black 35%,
+		black 65%,
+		transparent 100%
+	);
+}
+
+.scroll-picker-track {
+	position: absolute;
+	inset: 0;
+	overflow-y: scroll;
+	scroll-snap-type: y mandatory;
+	-webkit-overflow-scrolling: touch;
+}
+
+.scroll-picker-track::-webkit-scrollbar {
+	display: none;
+}
+.scroll-picker-track {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.scroll-picker-item {
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	scroll-snap-align: center;
+	font-size: 22px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	transition:
+		opacity 0.15s,
+		transform 0.15s;
+	color: var(--picker-color, #9ca3af);
+}
+
+.scroll-picker-item[data-selected="true"] {
+	opacity: 1;
+	color: var(--picker-selected, #111827);
+	font-size: 26px;
+	font-weight: 700;
+}
+
+.scroll-picker-highlight {
+	position: absolute;
+	top: 50px;
+	left: 4px;
+	right: 4px;
+	height: 50px;
+	border-radius: 12px;
+	pointer-events: none;
+}
+
+:is(.dark) .scroll-picker-item {
+	--picker-color: #6b7280;
+	--picker-selected: #ffffff;
+}
+:is(.light) .scroll-picker-item,
+.scroll-picker-item {
+	--picker-color: #9ca3af;
+	--picker-selected: #111827;
+}

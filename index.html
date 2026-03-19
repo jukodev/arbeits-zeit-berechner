@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+		<!-- iOS PWA meta tags -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="AZ-Berechner" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+
+		<!-- Splash screens (kept as placeholders) -->
+		<link
+			rel="apple-touch-startup-image"
+			href="/apple-touch-icon-180x180.png" />
+
+		<!-- Theme color - light default, JS will update for dark -->
+		<meta
+			name="theme-color"
+			content="#eef2ff"
+			media="(prefers-color-scheme: light)" />
+		<meta
+			name="theme-color"
+			content="#030712"
+			media="(prefers-color-scheme: dark)" />
+
+		<title>Arbeits-Zeit-Berechner</title>
+	</head>
+	<body
+		class="bg-gradient-to-b from-blue-50 via-indigo-50/50 to-white text-gray-900 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:text-white">
+		<div id="root"></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>
