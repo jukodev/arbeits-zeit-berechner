@@ -16,7 +16,7 @@ export default function Layout() {
 			</main>
 
 			{/* Tab bar */}
-			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-300/60 bg-[#f2f2f7]/80 backdrop-blur-xl dark:border-white/[0.08] dark:bg-black/80 safe-bottom">
+			<nav className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-300/60 bg-[#f2f2f7]/80 backdrop-blur-xl dark:border-white/[0.08] dark:bg-black/80">
 				<ul className="mx-auto flex max-w-md justify-around">
 					{navItems.map(({ to, label, Icon }) => (
 						<li key={to}>
