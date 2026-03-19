@@ -126,7 +126,7 @@ input[type="number"] {
 	position: absolute;
 	inset: 0;
 	overflow-y: scroll;
-	scroll-snap-type: y mandatory;
+	scroll-snap-type: y proximity;
 	-webkit-overflow-scrolling: touch;
 }
 

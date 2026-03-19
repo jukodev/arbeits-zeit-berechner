@@ -137,6 +137,18 @@ export default function Home() {
 
 	const remaining = Math.max(0, weekTarget - weekMinutes);
 	const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+
+	let sessionElapsed = 0;
+	if (session) {
+		const startMin = parseTime(isoToTimeStr(session.startTime));
+		const nowMin = parseTime(now);
+		sessionElapsed = Math.max(0, nowMin - startMin);
+	}
+
+	const liveRemaining = Math.max(
+		0,
+		remaining - (session ? sessionElapsed : 0),
+	);
 	const remainingActiveDays = weekDates
 		.map((d, i) => ({ date: d, idx: i, key: getDayKey(d) }))
 		.filter(
@@ -146,15 +158,8 @@ export default function Home() {
 		);
 	const perDay =
 		remainingActiveDays.length > 0
-			? Math.ceil(remaining / remainingActiveDays.length)
+			? Math.ceil(liveRemaining / remainingActiveDays.length)
 			: 0;
-
-	let sessionElapsed = 0;
-	if (session) {
-		const startMin = parseTime(isoToTimeStr(session.startTime));
-		const nowMin = parseTime(now);
-		sessionElapsed = Math.max(0, nowMin - startMin);
-	}
 
 	let stopDuration = 0;
 	if (session && showStopModal) {
@@ -235,9 +240,7 @@ export default function Home() {
 					</span>
 				</div>
 				<p className="mb-3 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">
-					{formatDuration(
-						Math.max(0, remaining - (session ? sessionElapsed : 0)),
-					)}
+					{formatDuration(liveRemaining)}
 				</p>
 
 				<div className="grid grid-cols-7 gap-1">
@@ -245,9 +248,13 @@ export default function Home() {
 						const dateStr = formatDateISO(d);
 						const dayKey = dayKeyFromIndex(i) as DayKey;
 						const active = settings.activeDays[dayKey];
-						const worked = weekDayMinutes[dateStr] || 0;
 						const isPast = i < todayIdx;
 						const isTodayDay = i === todayIdx;
+						const rawWorked = weekDayMinutes[dateStr] || 0;
+						const worked =
+							isTodayDay && session
+								? rawWorked + sessionElapsed
+								: rawWorked;
 						const planned = !isPast && active ? perDay : 0;
 
 						return (

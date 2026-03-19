@@ -5,21 +5,26 @@ interface ScrollPickerProps {
 	selectedIndex: number;
 	onChange: (index: number) => void;
 	width?: number;
+	wrap?: boolean;
 }
 
 const ITEM_HEIGHT = 50;
-const PADDING_ITEMS = 1; // extra blank items top/bottom so first/last can center
+const PADDING_ITEMS = 1;
+const REPEATS = 3; // render items 3x for infinite scroll illusion
 
 export default function ScrollPicker({
 	items,
 	selectedIndex,
 	onChange,
 	width = 70,
+	wrap = false,
 }: ScrollPickerProps) {
 	const trackRef = useRef<HTMLDivElement>(null);
 	const isUserScroll = useRef(true);
 	const rafRef = useRef<number>(0);
 	const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+	const count = items.length;
+	const centerOffset = wrap ? count : 0; // start in the middle copy
 
 	const scrollToIndex = useCallback((idx: number, smooth = true) => {
 		const el = trackRef.current;
@@ -29,7 +34,6 @@ export default function ScrollPicker({
 			top: idx * ITEM_HEIGHT,
 			behavior: smooth ? "smooth" : "instant",
 		});
-		// Re-enable user scroll detection after animation
 		setTimeout(
 			() => {
 				isUserScroll.current = true;
@@ -40,7 +44,7 @@ export default function ScrollPicker({
 
 	// Initial scroll
 	useEffect(() => {
-		scrollToIndex(selectedIndex, false);
+		scrollToIndex(centerOffset + selectedIndex, false);
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	// Sync when parent changes selectedIndex
@@ -48,11 +52,14 @@ export default function ScrollPicker({
 		if (!isUserScroll.current) return;
 		const el = trackRef.current;
 		if (!el) return;
-		const currentIdx = Math.round(el.scrollTop / ITEM_HEIGHT);
-		if (currentIdx !== selectedIndex) {
-			scrollToIndex(selectedIndex, true);
+		const currentRaw = Math.round(el.scrollTop / ITEM_HEIGHT);
+		const currentReal = wrap
+			? ((currentRaw % count) + count) % count
+			: currentRaw;
+		if (currentReal !== selectedIndex) {
+			scrollToIndex(centerOffset + selectedIndex, true);
 		}
-	}, [selectedIndex, scrollToIndex]);
+	}, [selectedIndex, scrollToIndex, centerOffset, count, wrap]);
 
 	const handleScroll = useCallback(() => {
 		if (!isUserScroll.current) return;
@@ -64,18 +71,41 @@ export default function ScrollPicker({
 
 		settleTimer.current = setTimeout(() => {
 			rafRef.current = requestAnimationFrame(() => {
-				const idx = Math.round(el.scrollTop / ITEM_HEIGHT);
-				const clamped = Math.max(0, Math.min(idx, items.length - 1));
-				if (clamped !== selectedIndex) {
-					onChange(clamped);
+				const rawIdx = Math.round(el.scrollTop / ITEM_HEIGHT);
+
+				if (wrap) {
+					const realIdx = ((rawIdx % count) + count) % count;
+					// Re-center to middle copy silently
+					const centeredIdx = centerOffset + realIdx;
+					if (rawIdx !== centeredIdx) {
+						isUserScroll.current = false;
+						el.scrollTo({
+							top: centeredIdx * ITEM_HEIGHT,
+							behavior: "instant",
+						});
+						setTimeout(() => {
+							isUserScroll.current = true;
+						}, 30);
+					}
+					if (realIdx !== selectedIndex) {
+						onChange(realIdx);
+					}
+				} else {
+					const clamped = Math.max(0, Math.min(rawIdx, count - 1));
+					if (clamped !== selectedIndex) {
+						onChange(clamped);
+					}
 				}
 			});
-		}, 60);
-	}, [items.length, onChange, selectedIndex]);
+		}, 45);
+	}, [count, onChange, selectedIndex, wrap, centerOffset]);
+
+	const virtualItems = wrap
+		? Array.from({ length: REPEATS }, () => items).flat()
+		: items;
 
 	return (
 		<div className="scroll-picker" style={{ width }}>
-			{/* Selection highlight band */}
 			<div className="scroll-picker-highlight bg-black/[0.04] dark:bg-white/[0.08]" />
 
 			<div
@@ -87,14 +117,17 @@ export default function ScrollPicker({
 					<div key={`pad-top-${i}`} style={{ height: ITEM_HEIGHT }} />
 				))}
 
-				{items.map((item, i) => (
-					<div
-						key={i}
-						className="scroll-picker-item"
-						data-selected={i === selectedIndex}>
-						{item}
-					</div>
-				))}
+				{virtualItems.map((item, i) => {
+					const realIdx = wrap ? i % count : i;
+					return (
+						<div
+							key={i}
+							className="scroll-picker-item"
+							data-selected={realIdx === selectedIndex}>
+							{item}
+						</div>
+					);
+				})}
 
 				{/* Bottom padding */}
 				{Array.from({ length: PADDING_ITEMS }).map((_, i) => (

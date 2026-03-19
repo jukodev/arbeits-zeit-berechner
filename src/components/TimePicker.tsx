@@ -43,6 +43,7 @@ export default function TimePicker({ value, onChange }: TimePickerProps) {
 				selectedIndex={hourIdx}
 				onChange={handleHourChange}
 				width={64}
+				wrap
 			/>
 			<span className="text-2xl font-bold text-gray-900 dark:text-white select-none px-1">
 				:
@@ -52,6 +53,7 @@ export default function TimePicker({ value, onChange }: TimePickerProps) {
 				selectedIndex={minIdx}
 				onChange={handleMinChange}
 				width={64}
+				wrap
 			/>
 		</div>
 	);
