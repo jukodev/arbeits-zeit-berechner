@@ -84,24 +84,17 @@ export default function History() {
 		0,
 	);
 
-	// Count holidays that fall on active working days this week
-	const activeDayCount = Object.values(settings.activeDays).filter(
-		Boolean,
-	).length;
+	// Count holidays in this week (on Mon–Fri) and subtract 1/5 of weekly target per holiday
 	const holidaysInWeek = weekDates.filter(date => {
+		const day = date.getDay();
+		if (day === 0 || day === 6) return false; // skip weekends
 		const dateStr = formatDateISO(date);
-		const dayKey = getDayKey(date);
-		const active =
-			settings.activeDays[dayKey as keyof typeof settings.activeDays];
 		const holidayInfo = getHolidayInfo(dateStr);
-		return active && holidayInfo.type !== null;
+		return holidayInfo.type !== null;
 	}).length;
 
 	const fullTarget = settings.weeklyTargetHours * 60;
-	const target =
-		activeDayCount > 0
-			? fullTarget - (holidaysInWeek * fullTarget) / activeDayCount
-			: fullTarget;
+	const target = fullTarget - (holidaysInWeek * fullTarget) / 5;
 	const diff = weekTotal - target;
 
 	const openEditor = (
