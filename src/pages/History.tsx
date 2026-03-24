@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight, Pencil, Plus, Minus } from "lucide-react";
+import {
+	ChevronLeft,
+	ChevronRight,
+	Pencil,
+	Plus,
+	Minus,
+	Gift,
+	Calendar,
+} from "lucide-react";
 import GlassCard from "../components/GlassCard";
 import TimePicker from "../components/TimePicker";
 import { useSettings } from "../hooks/useSettingsContext";
@@ -18,12 +26,14 @@ import {
 	getDayKey,
 	isToday,
 } from "../lib/dates";
+import { fetchBavarianHolidays, type PublicHoliday } from "../lib/holidays";
 import type { TimeEntry } from "../db/database";
 
 export default function History() {
 	const { settings } = useSettings();
 	const [weekOffset, setWeekOffset] = useState(0);
 	const [entries, setEntries] = useState<TimeEntry[]>([]);
+	const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([]);
 	const [editor, setEditor] = useState<{
 		mode: "add" | "edit";
 		entryId?: number;
@@ -37,6 +47,26 @@ export default function History() {
 	baseDate.setDate(baseDate.getDate() + weekOffset * 7);
 	const weekDates = getWeekDates(baseDate);
 	const weekNum = getWeekNumber(weekDates[0]);
+
+	// Load public holidays for the week's year
+	useEffect(() => {
+		const year = weekDates[0].getFullYear();
+		fetchBavarianHolidays(year).then(setPublicHolidays);
+	}, [weekOffset]);
+
+	// Helper to detect holiday type for a date
+	const getHolidayInfo = (
+		dateStr: string,
+	): { type: "public" | "private" | null; name: string | null } => {
+		const publicHoliday = publicHolidays.find(h => h.date === dateStr);
+		if (publicHoliday) {
+			return { type: "public", name: publicHoliday.name };
+		}
+		if (settings.holidays.includes(dateStr)) {
+			return { type: "private", name: "Urlaubstag" };
+		}
+		return { type: null, name: null };
+	};
 
 	const loadEntries = useCallback(async () => {
 		const start = formatDateISO(weekDates[0]);
@@ -167,28 +197,57 @@ export default function History() {
 					0,
 				);
 				const todayDay = isToday(dateStr);
+				const holidayInfo = getHolidayInfo(dateStr);
+				const isHoliday = holidayInfo.type !== null;
 
 				return (
 					<GlassCard
 						key={i}
-						className={`p-4 ${!active ? "opacity-50" : ""}`}>
+						className={`p-4 ${!active && !isHoliday ? "opacity-50" : ""} ${
+							holidayInfo.type === "public"
+								? "ring-1 ring-amber-400/50 bg-amber-50/50 dark:bg-amber-500/5"
+								: holidayInfo.type === "private"
+									? "ring-1 ring-blue-400/50 bg-blue-50/50 dark:bg-blue-500/5"
+									: ""
+						}`}>
 						<div className="mb-1 flex items-center justify-between">
-							<span
-								className={`text-[15px] font-semibold ${todayDay ? "text-blue-500" : "text-gray-900 dark:text-white"}`}>
-								{formatDateDisplay(date)}
-							</span>
+							<div className="flex items-center gap-2">
+								<span
+									className={`text-[15px] font-semibold ${todayDay ? "text-blue-500" : "text-gray-900 dark:text-white"}`}>
+									{formatDateDisplay(date)}
+								</span>
+								{holidayInfo.type === "public" && (
+									<span className="flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+										<Gift size={10} />
+										{holidayInfo.name}
+									</span>
+								)}
+								{holidayInfo.type === "private" && (
+									<span className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-500/20 dark:text-blue-400">
+										<Calendar size={10} />
+										Urlaub
+									</span>
+								)}
+							</div>
 							<div className="flex items-center gap-2">
 								<span className="text-[15px] font-bold tabular-nums text-gray-900 dark:text-white">
 									{dayTotal > 0
 										? formatDuration(dayTotal)
 										: "–"}
 								</span>
-								<button
-									onClick={() => openEditor("add", dateStr)}
-									className="rounded-full p-1 transition-colors active:bg-black/5 dark:active:bg-white/10"
-									title="Eintrag hinzufügen">
-									<Plus size={16} className="text-gray-400" />
-								</button>
+								{!isHoliday && (
+									<button
+										onClick={() =>
+											openEditor("add", dateStr)
+										}
+										className="rounded-full p-1 transition-colors active:bg-black/5 dark:active:bg-white/10"
+										title="Eintrag hinzufügen">
+										<Plus
+											size={16}
+											className="text-gray-400"
+										/>
+									</button>
+								)}
 							</div>
 						</div>
 
@@ -206,20 +265,22 @@ export default function History() {
 										</span>
 									)}
 								</div>
-								<button
-									onClick={() =>
-										openEditor("edit", dateStr, entry)
-									}
-									className="rounded-full p-1.5 transition-colors active:bg-black/5 dark:active:bg-white/10">
-									<Pencil
-										size={14}
-										className="text-gray-400"
-									/>
-								</button>
+								{!isHoliday && (
+									<button
+										onClick={() =>
+											openEditor("edit", dateStr, entry)
+										}
+										className="rounded-full p-1.5 transition-colors active:bg-black/5 dark:active:bg-white/10">
+										<Pencil
+											size={14}
+											className="text-gray-400"
+										/>
+									</button>
+								)}
 							</div>
 						))}
 
-						{dayEntries.length === 0 && active && (
+						{dayEntries.length === 0 && active && !isHoliday && (
 							<p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
 								Keine Einträge
 							</p>
