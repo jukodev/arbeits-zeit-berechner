@@ -143,6 +143,17 @@ export default function History() {
 		await loadEntries();
 	};
 
+	// Lock background scrolling when editor is open
+	useEffect(() => {
+		if (editor) {
+			const main = document.querySelector("main");
+			if (main) main.style.overflow = "hidden";
+			return () => {
+				if (main) main.style.overflow = "";
+			};
+		}
+	}, [editor]);
+
 	const editorDuration = editor
 		? Math.max(
 				0,
@@ -327,8 +338,8 @@ export default function History() {
 
 			{/* Full-screen editor */}
 			{editor && (
-				<div className="fixed inset-0 z-50 flex flex-col bg-[#f2f2f7] dark:bg-black animate-slide-up-full safe-top">
-					<div className="flex items-center justify-between px-4 py-3 border-b border-gray-200/80 dark:border-white/[0.08]">
+				<div className="fixed inset-0 z-50 flex flex-col bg-[#f2f2f7] dark:bg-black animate-slide-up-full">
+					<div className="flex items-center justify-between px-4 py-3 mt-10 border-b border-gray-200/80 dark:border-white/[0.08]">
 						<button
 							onClick={closeEditor}
 							className="min-w-[80px] text-left text-[17px] text-blue-500">
