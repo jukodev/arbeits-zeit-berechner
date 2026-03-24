@@ -252,26 +252,26 @@ export default function Settings() {
 					<>
 						<button
 							onClick={() => setShowAddHoliday(false)}
-							className="flex-1 rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 active:bg-gray-200 dark:bg-white/[0.08] dark:text-gray-300 dark:active:bg-white/[0.12]">
+							className="flex-1 rounded-2xl bg-black/5 px-4 py-3 text-[15px] font-semibold text-gray-600 active:bg-black/8 dark:bg-white/8 dark:text-gray-300 dark:active:bg-white/12 transition-colors">
 							Abbrechen
 						</button>
 						<button
 							onClick={addHoliday}
 							disabled={!newHolidayDate}
-							className="flex-1 rounded-xl bg-blue-500 px-4 py-2.5 text-sm font-medium text-white active:bg-blue-600 disabled:opacity-50">
+							className="flex-1 rounded-2xl bg-blue-500/90 px-4 py-3 text-[15px] font-semibold text-white backdrop-blur-sm active:bg-blue-600 disabled:opacity-40 transition-colors">
 							Hinzufügen
 						</button>
 					</>
 				}>
-				<div className="flex flex-col items-center gap-3 py-2">
-					<p className="text-sm text-gray-500 dark:text-gray-400">
+				<div className="flex flex-col items-center gap-4 py-3">
+					<p className="text-[13px] font-medium text-gray-400 dark:text-gray-500">
 						Datum auswählen
 					</p>
 					<input
 						type="date"
 						value={newHolidayDate}
 						onChange={e => setNewHolidayDate(e.target.value)}
-						className="w-full rounded-xl border border-black/10 bg-white/80 px-4 py-3 text-center text-sm font-medium text-gray-900 backdrop-blur dark:border-white/10 dark:bg-white/[0.08] dark:text-white"
+						className="w-full rounded-2xl border border-black/6 bg-black/3 px-4 py-3.5 text-center text-[15px] font-semibold text-gray-900 backdrop-blur-sm dark:border-white/8 dark:bg-white/6 dark:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/30"
 					/>
 				</div>
 			</Modal>
