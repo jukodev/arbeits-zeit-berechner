@@ -21,6 +21,7 @@ export interface Settings {
 		sun: boolean;
 	};
 	theme: "light" | "dark" | "system";
+	holidays: string[]; // Array of YYYY-MM-DD dates marked as holidays
 }
 
 export interface ActiveSession {
@@ -77,4 +78,5 @@ export const DEFAULT_SETTINGS: Settings = {
 		sun: false,
 	},
 	theme: "system",
+	holidays: [],
 };

@@ -7,6 +7,7 @@ import {
 	Clock,
 	CalendarDays,
 	TrendingUp,
+	Gift,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
 import Modal from "../components/Modal";
@@ -38,6 +39,7 @@ import {
 	dayKeyFromIndex,
 	type DayKey,
 } from "../lib/dates";
+import { fetchBavarianHolidays, type PublicHoliday } from "../lib/holidays";
 import type { ActiveSession } from "../db/database";
 
 export default function Home() {
@@ -52,12 +54,14 @@ export default function Home() {
 	const [weekDayMinutes, setWeekDayMinutes] = useState<
 		Record<string, number>
 	>({});
+	const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([]);
 	const [now, setNow] = useState(getCurrentTimeStr());
 	const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
 	const today = todayISO();
 	const weekDates = getWeekDates(new Date());
 	const weekTarget = settings.weeklyTargetHours * 60;
+	const dailyTarget = weekTarget / 5; // 1/5th of weekly target for holidays
 
 	const loadSession = useCallback(async () => {
 		const s = await getActiveSession();
@@ -94,6 +98,12 @@ export default function Home() {
 		loadSession();
 		loadStats();
 	}, [loadSession, loadStats]);
+
+	// Load Bavarian public holidays
+	useEffect(() => {
+		const year = new Date().getFullYear();
+		fetchBavarianHolidays(year).then(setPublicHolidays);
+	}, []);
 
 	useEffect(() => {
 		timerRef.current = setInterval(
@@ -145,17 +155,45 @@ export default function Home() {
 		sessionElapsed = Math.max(0, nowMin - startMin);
 	}
 
+	// Helper: check if a date is a holiday (user-set or public)
+	const isHoliday = (dateStr: string): boolean => {
+		return (
+			settings.holidays.includes(dateStr) ||
+			publicHolidays.some(h => h.date === dateStr)
+		);
+	};
+
+	// Calculate holiday minutes for the current week
+	const holidayMinutes = weekDates.reduce((sum, d) => {
+		const dateStr = formatDateISO(d);
+		return sum + (isHoliday(dateStr) ? dailyTarget : 0);
+	}, 0);
+
+	// Live remaining = total remaining minus current session
 	const liveRemaining = Math.max(
 		0,
-		remaining - (session ? sessionElapsed : 0),
+		remaining - (session ? sessionElapsed : 0) - holidayMinutes,
 	);
+
+	// Determine if today has already been worked on
+	const todayWorked = todayMinutes > 0 || !!session;
+
+	// Remaining active days: ONLY future days (exclude today if already worked/working)
 	const remainingActiveDays = weekDates
-		.map((d, i) => ({ date: d, idx: i, key: getDayKey(d) }))
+		.map((d, i) => ({
+			date: d,
+			idx: i,
+			key: getDayKey(d),
+			dateStr: formatDateISO(d),
+		}))
 		.filter(
-			({ idx, key }) =>
-				idx >= todayIdx &&
-				settings.activeDays[key as keyof typeof settings.activeDays],
+			({ idx, key, dateStr }) =>
+				// Only include future days (> todayIdx), OR today if not yet worked
+				(idx > todayIdx || (idx === todayIdx && !todayWorked)) &&
+				settings.activeDays[key as keyof typeof settings.activeDays] &&
+				!isHoliday(dateStr), // Exclude holidays from forecast distribution
 		);
+
 	const perDay =
 		remainingActiveDays.length > 0
 			? Math.ceil(liveRemaining / remainingActiveDays.length)
@@ -255,19 +293,32 @@ export default function Home() {
 							isTodayDay && session
 								? rawWorked + sessionElapsed
 								: rawWorked;
-						const planned = !isPast && active ? perDay : 0;
+						const dayIsHoliday = isHoliday(dateStr);
+						// For holidays: show assumed 1/5th; for regular days: show forecast
+						const planned = dayIsHoliday
+							? dailyTarget
+							: !isPast && active && (!isTodayDay || !todayWorked)
+								? perDay
+								: 0;
 
 						return (
 							<div
 								key={i}
 								className={`flex flex-col items-center rounded-lg py-1.5 text-center text-[10px] transition-colors
                   ${isTodayDay ? "bg-blue-50 dark:bg-blue-500/10" : ""}
-                  ${!active ? "opacity-40" : ""}
+                  ${dayIsHoliday ? "bg-amber-50 dark:bg-amber-500/10" : ""}
+                  ${!active && !dayIsHoliday ? "opacity-40" : ""}
                 `}>
-								<span className="font-medium text-gray-500 dark:text-gray-400">
+								<span
+									className={`font-medium ${dayIsHoliday ? "text-amber-600 dark:text-amber-400" : "text-gray-500 dark:text-gray-400"}`}>
 									{dayNameShort(i)}
 								</span>
-								{worked > 0 ? (
+								{dayIsHoliday && worked === 0 ? (
+									<span className="flex items-center gap-0.5 tabular-nums text-amber-500 dark:text-amber-400">
+										<Gift size={8} />
+										{(dailyTarget / 60).toFixed(1)}h
+									</span>
+								) : worked > 0 ? (
 									<span className="font-bold tabular-nums text-gray-900 dark:text-white">
 										{(worked / 60).toFixed(1)}h
 									</span>
