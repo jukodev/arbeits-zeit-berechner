@@ -30,7 +30,7 @@ export default function Modal({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+		<div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pt-4 pb-24 sm:pb-4">
 			{/* Backdrop */}
 			<div
 				className="absolute inset-0 bg-black/30 backdrop-blur-md"
