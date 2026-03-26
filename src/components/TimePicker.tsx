@@ -9,7 +9,7 @@ const MINUTES = Array.from({ length: 60 }, (_, i) =>
 );
 
 interface TimePickerProps {
-	value: string; // "HH:mm"
+	value: string;
 	onChange: (value: string) => void;
 }
 

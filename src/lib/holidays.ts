@@ -1,15 +1,10 @@
-/**
- * Bavarian public holidays utility
- * Fetches "gesetzliche Feiertage" (public holidays) for Bavaria from an open API
- */
-
 export interface PublicHoliday {
-	date: string; // YYYY-MM-DD
+	date: string;
 	name: string;
 }
 
 const CACHE_KEY = "bavarian-holidays-cache";
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000;
 
 interface CachedHolidays {
 	timestamp: number;
@@ -17,22 +12,15 @@ interface CachedHolidays {
 	holidays: PublicHoliday[];
 }
 
-/**
- * Fetch Bavarian public holidays for a given year
- * Uses the date.nager.at API (free, no auth required)
- */
 export async function fetchBavarianHolidays(
 	year: number,
 ): Promise<PublicHoliday[]> {
-	// Check cache first
 	const cached = getCachedHolidays(year);
 	if (cached) {
 		return cached;
 	}
 
 	try {
-		// Use date.nager.at API - free and reliable
-		// Bavaria = BY (Bayern)
 		const response = await fetch(
 			`https://date.nager.at/api/v3/PublicHolidays/${year}/DE`,
 		);
@@ -44,8 +32,6 @@ export async function fetchBavarianHolidays(
 
 		const data = await response.json();
 
-		// Filter for Bavaria (BY) - holidays that apply to all of Germany or specifically Bavaria
-		// Bavarian holidays have either no counties (nationwide) or include "BY"
 		const bavarianHolidays: PublicHoliday[] = data
 			.filter(
 				(h: { counties: string[] | null }) =>
@@ -56,7 +42,6 @@ export async function fetchBavarianHolidays(
 				name: h.localName,
 			}));
 
-		// Cache the result
 		cacheHolidays(year, bavarianHolidays);
 
 		return bavarianHolidays;
@@ -66,9 +51,6 @@ export async function fetchBavarianHolidays(
 	}
 }
 
-/**
- * Get cached holidays if available and not expired
- */
 function getCachedHolidays(year: number): PublicHoliday[] | null {
 	try {
 		const raw = localStorage.getItem(CACHE_KEY);
@@ -81,15 +63,10 @@ function getCachedHolidays(year: number): PublicHoliday[] | null {
 		if (!isExpired && isSameYear) {
 			return cached.holidays;
 		}
-	} catch {
-		// Ignore cache errors
-	}
+	} catch {}
 	return null;
 }
 
-/**
- * Cache holidays in localStorage
- */
 function cacheHolidays(year: number, holidays: PublicHoliday[]): void {
 	try {
 		const cache: CachedHolidays = {
@@ -98,17 +75,10 @@ function cacheHolidays(year: number, holidays: PublicHoliday[]): void {
 			holidays,
 		};
 		localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-	} catch {
-		// Ignore cache errors
-	}
+	} catch {}
 }
 
-/**
- * Fallback holidays for Bavaria if API fails
- * These are the main "gesetzliche Feiertage" (legal public holidays)
- */
 function getFallbackHolidays(year: number): PublicHoliday[] {
-	// Fixed date holidays
 	const fixed: PublicHoliday[] = [
 		{ date: `${year}-01-01`, name: "Neujahr" },
 		{ date: `${year}-01-06`, name: "Heilige Drei Könige" },
@@ -120,7 +90,6 @@ function getFallbackHolidays(year: number): PublicHoliday[] {
 		{ date: `${year}-12-26`, name: "2. Weihnachtstag" },
 	];
 
-	// Easter-dependent holidays (calculated)
 	const easter = calculateEaster(year);
 	const easterDependent: PublicHoliday[] = [
 		{ date: addDays(easter, -2), name: "Karfreitag" },
@@ -156,18 +125,12 @@ function calculateEaster(year: number): Date {
 	return new Date(year, month - 1, day);
 }
 
-/**
- * Add days to a date and return YYYY-MM-DD string
- */
 function addDays(date: Date, days: number): string {
 	const result = new Date(date);
 	result.setDate(result.getDate() + days);
 	return formatDateISO(result);
 }
 
-/**
- * Format date to YYYY-MM-DD
- */
 function formatDateISO(d: Date): string {
 	const y = d.getFullYear();
 	const m = (d.getMonth() + 1).toString().padStart(2, "0");
@@ -175,9 +138,6 @@ function formatDateISO(d: Date): string {
 	return `${y}-${m}-${day}`;
 }
 
-/**
- * Check if a date is a Bavarian public holiday
- */
 export function isPublicHoliday(
 	dateStr: string,
 	holidays: PublicHoliday[],
@@ -185,9 +145,6 @@ export function isPublicHoliday(
 	return holidays.some(h => h.date === dateStr);
 }
 
-/**
- * Get the name of a public holiday for a date, if any
- */
 export function getHolidayName(
 	dateStr: string,
 	holidays: PublicHoliday[],

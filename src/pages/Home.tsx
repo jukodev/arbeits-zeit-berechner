@@ -62,7 +62,7 @@ export default function Home() {
 	const today = todayISO();
 	const weekDates = getWeekDates(new Date());
 	const weekTarget = settings.weeklyTargetHours * 60;
-	const dailyTarget = weekTarget / 5; // 1/5th of weekly target for holidays
+	const dailyTarget = weekTarget / 5;
 
 	const loadSession = useCallback(async () => {
 		const s = await getActiveSession();
@@ -100,7 +100,6 @@ export default function Home() {
 		loadStats();
 	}, [loadSession, loadStats]);
 
-	// Load Bavarian public holidays
 	useEffect(() => {
 		const year = new Date().getFullYear();
 		fetchBavarianHolidays(year).then(setPublicHolidays);
@@ -165,7 +164,6 @@ export default function Home() {
 		? getRequiredBreakMinutes(todayMinutes + sessionElapsed)
 		: 0;
 
-	// Helper: check if a date is a holiday (user-set or public)
 	const isHoliday = (dateStr: string): boolean => {
 		return (
 			settings.holidays.includes(dateStr) ||
@@ -173,22 +171,18 @@ export default function Home() {
 		);
 	};
 
-	// Calculate holiday minutes for the current week
 	const holidayMinutes = weekDates.reduce((sum, d) => {
 		const dateStr = formatDateISO(d);
 		return sum + (isHoliday(dateStr) ? dailyTarget : 0);
 	}, 0);
 
-	// Live remaining = total remaining minus current session
 	const liveRemaining = Math.max(
 		0,
 		remaining - (session ? sessionElapsed : 0) - holidayMinutes,
 	);
 
-	// Determine if today has already been worked on
 	const todayWorked = todayMinutes > 0 || !!session;
 
-	// Remaining active days: ONLY future days (exclude today if already worked/working)
 	const remainingActiveDays = weekDates
 		.map((d, i) => ({
 			date: d,
@@ -198,10 +192,9 @@ export default function Home() {
 		}))
 		.filter(
 			({ idx, key, dateStr }) =>
-				// Only include future days (> todayIdx), OR today if not yet worked
 				(idx > todayIdx || (idx === todayIdx && !todayWorked)) &&
 				settings.activeDays[key as keyof typeof settings.activeDays] &&
-				!isHoliday(dateStr), // Exclude holidays from forecast distribution
+				!isHoliday(dateStr),
 		);
 
 	const perDay =
@@ -221,7 +214,6 @@ export default function Home() {
 
 	return (
 		<div className="mx-auto flex max-w-md flex-col items-center gap-5 pb-6">
-			{/* Buzzer */}
 			<button
 				onClick={handleBuzzerPress}
 				className={`mt-2 flex h-40 w-40 items-center justify-center rounded-full transition-transform duration-200 active:scale-95
@@ -266,9 +258,9 @@ export default function Home() {
 								(session ? sessionElapsed - sessionBreak : 0),
 						)}
 						{session && sessionBreak > 0 && (
-							<span className="ml-1 text-sm font-normal text-orange-500">
+							<div className="ml-1 text-sm font-normal text-orange-500">
 								(+{sessionBreak}m Pause)
-							</span>
+							</div>
 						)}
 					</p>
 				</GlassCard>
@@ -310,7 +302,6 @@ export default function Home() {
 								? rawWorked + sessionElapsed
 								: rawWorked;
 						const dayIsHoliday = isHoliday(dateStr);
-						// For holidays: show assumed 1/5th; for regular days: show forecast
 						const planned = dayIsHoliday
 							? dailyTarget
 							: !isPast && active && (!isTodayDay || !todayWorked)
@@ -381,7 +372,6 @@ export default function Home() {
 				</div>
 			</GlassCard>
 
-			{/* Start Modal */}
 			<Modal
 				open={showStartModal}
 				onClose={() => setShowStartModal(false)}
@@ -411,7 +401,6 @@ export default function Home() {
 				</div>
 			</Modal>
 
-			{/* Stop Modal */}
 			<Modal
 				open={showStopModal}
 				onClose={() => setShowStopModal(false)}

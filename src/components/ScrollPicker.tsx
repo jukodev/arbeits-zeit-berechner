@@ -10,7 +10,7 @@ interface ScrollPickerProps {
 
 const ITEM_HEIGHT = 50;
 const PADDING_ITEMS = 1;
-const REPEATS = 3; // render items 3x for infinite scroll illusion
+const REPEATS = 3;
 
 export default function ScrollPicker({
 	items,
@@ -24,7 +24,7 @@ export default function ScrollPicker({
 	const rafRef = useRef<number>(0);
 	const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 	const count = items.length;
-	const centerOffset = wrap ? count : 0; // start in the middle copy
+	const centerOffset = wrap ? count : 0;
 
 	const scrollToIndex = useCallback((idx: number, smooth = true) => {
 		const el = trackRef.current;
@@ -42,12 +42,10 @@ export default function ScrollPicker({
 		);
 	}, []);
 
-	// Initial scroll
 	useEffect(() => {
 		scrollToIndex(centerOffset + selectedIndex, false);
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-	// Sync when parent changes selectedIndex
 	useEffect(() => {
 		if (!isUserScroll.current) return;
 		const el = trackRef.current;
@@ -75,7 +73,6 @@ export default function ScrollPicker({
 
 				if (wrap) {
 					const realIdx = ((rawIdx % count) + count) % count;
-					// Re-center to middle copy silently
 					const centeredIdx = centerOffset + realIdx;
 					if (rawIdx !== centeredIdx) {
 						isUserScroll.current = false;
@@ -112,7 +109,6 @@ export default function ScrollPicker({
 				ref={trackRef}
 				className="scroll-picker-track"
 				onScroll={handleScroll}>
-				{/* Top padding */}
 				{Array.from({ length: PADDING_ITEMS }).map((_, i) => (
 					<div key={`pad-top-${i}`} style={{ height: ITEM_HEIGHT }} />
 				))}
@@ -129,7 +125,6 @@ export default function ScrollPicker({
 					);
 				})}
 
-				{/* Bottom padding */}
 				{Array.from({ length: PADDING_ITEMS }).map((_, i) => (
 					<div key={`pad-bot-${i}`} style={{ height: ITEM_HEIGHT }} />
 				))}

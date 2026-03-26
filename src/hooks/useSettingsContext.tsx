@@ -32,7 +32,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 		});
 	}, []);
 
-	// Apply theme
 	useEffect(() => {
 		const root = document.documentElement;
 		if (settings.theme === "dark") {
@@ -42,7 +41,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 			root.classList.add("light");
 			root.classList.remove("dark");
 		} else {
-			// system
 			const prefersDark = window.matchMedia(
 				"(prefers-color-scheme: dark)",
 			).matches;

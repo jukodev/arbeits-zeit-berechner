@@ -2,14 +2,14 @@ import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 export interface TimeEntry {
 	id?: number;
-	date: string; // YYYY-MM-DD
-	startTime: string; // HH:mm
-	endTime: string; // HH:mm
+	date: string;
+	startTime: string;
+	endTime: string;
 	breakMinutes: number;
 }
 
 export interface Settings {
-	key: string; // always 'settings'
+	key: string;
 	weeklyTargetHours: number;
 	activeDays: {
 		mon: boolean;
@@ -21,13 +21,13 @@ export interface Settings {
 		sun: boolean;
 	};
 	theme: "light" | "dark" | "system";
-	holidays: string[]; // Array of YYYY-MM-DD dates marked as holidays
+	holidays: string[];
 }
 
 export interface ActiveSession {
-	key: string; // always 'active'
-	startTime: string; // ISO datetime string
-	date: string; // YYYY-MM-DD
+	key: string;
+	startTime: string;
+	date: string;
 }
 
 interface AZBDatabase extends DBSchema {

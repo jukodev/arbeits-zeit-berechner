@@ -48,13 +48,11 @@ export default function History() {
 	const weekDates = getWeekDates(baseDate);
 	const weekNum = getWeekNumber(weekDates[0]);
 
-	// Load public holidays for the week's year
 	useEffect(() => {
 		const year = weekDates[0].getFullYear();
 		fetchBavarianHolidays(year).then(setPublicHolidays);
 	}, [weekOffset]);
 
-	// Helper to detect holiday type for a date
 	const getHolidayInfo = (
 		dateStr: string,
 	): { type: "public" | "private" | null; name: string | null } => {
@@ -84,10 +82,9 @@ export default function History() {
 		0,
 	);
 
-	// Count holidays in this week (on Mon–Fri) and subtract 1/5 of weekly target per holiday
 	const holidaysInWeek = weekDates.filter(date => {
 		const day = date.getDay();
-		if (day === 0 || day === 6) return false; // skip weekends
+		if (day === 0 || day === 6) return false;
 		const dateStr = formatDateISO(date);
 		const holidayInfo = getHolidayInfo(dateStr);
 		return holidayInfo.type !== null;
@@ -143,7 +140,6 @@ export default function History() {
 		await loadEntries();
 	};
 
-	// Lock background scrolling when editor is open
 	useEffect(() => {
 		if (editor) {
 			const main = document.querySelector("main");
@@ -165,7 +161,6 @@ export default function History() {
 			)
 		: 0;
 
-	// Group entries by date
 	const grouped: Record<string, TimeEntry[]> = {};
 	for (const e of entries) {
 		(grouped[e.date] ??= []).push(e);
@@ -173,7 +168,6 @@ export default function History() {
 
 	return (
 		<div className="mx-auto flex max-w-md flex-col gap-4 pb-6">
-			{/* Week navigation */}
 			<div className="flex items-center justify-between">
 				<button
 					onClick={() => setWeekOffset(o => o - 1)}
@@ -202,7 +196,6 @@ export default function History() {
 				</button>
 			</div>
 
-			{/* Days */}
 			{weekDates.map((date, i) => {
 				const dateStr = formatDateISO(date);
 				const dayKey = getDayKey(date);
@@ -310,7 +303,6 @@ export default function History() {
 				);
 			})}
 
-			{/* Week Summary */}
 			<GlassCard className="p-4">
 				<div className="flex items-center justify-between">
 					<span className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -336,7 +328,6 @@ export default function History() {
 				</div>
 			</GlassCard>
 
-			{/* Full-screen editor */}
 			{editor && (
 				<div className="fixed inset-0 z-50 flex flex-col bg-[#f2f2f7] dark:bg-black animate-slide-up-full">
 					<div className="flex items-center justify-between px-4 py-3 mt-10 border-b border-gray-200/80 dark:border-white/[0.08]">

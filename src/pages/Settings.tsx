@@ -22,7 +22,6 @@ export default function Settings() {
 	const [showAddHoliday, setShowAddHoliday] = useState(false);
 	const [newHolidayDate, setNewHolidayDate] = useState("");
 
-	// Load public holidays
 	useEffect(() => {
 		const year = new Date().getFullYear();
 		fetchBavarianHolidays(year).then(setPublicHolidays);
@@ -53,7 +52,6 @@ export default function Settings() {
 		});
 	};
 
-	// Upcoming holidays for display (user + public, next 90 days)
 	const today = new Date();
 	const in90Days = new Date(today);
 	in90Days.setDate(in90Days.getDate() + 90);
@@ -85,7 +83,6 @@ export default function Settings() {
 
 	return (
 		<div className="mx-auto flex max-w-md flex-col gap-5 pb-6">
-			{/* Weekly target */}
 			<GlassCard className="p-5">
 				<label className="flex items-center justify-between">
 					<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -114,7 +111,6 @@ export default function Settings() {
 				</label>
 			</GlassCard>
 
-			{/* Active days */}
 			<GlassCard className="p-5">
 				<p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 					Arbeitstage
@@ -138,7 +134,6 @@ export default function Settings() {
 				</div>
 			</GlassCard>
 
-			{/* Theme */}
 			<GlassCard className="p-5">
 				<p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 					Erscheinungsbild
@@ -169,7 +164,6 @@ export default function Settings() {
 				</div>
 			</GlassCard>
 
-			{/* Holidays */}
 			<GlassCard className="p-5">
 				<div className="mb-3 flex items-center justify-between">
 					<p className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -243,7 +237,6 @@ export default function Settings() {
 				)}
 			</GlassCard>
 
-			{/* Add Holiday Modal */}
 			<Modal
 				open={showAddHoliday}
 				onClose={() => setShowAddHoliday(false)}

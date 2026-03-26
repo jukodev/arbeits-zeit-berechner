@@ -10,12 +10,10 @@ const navItems = [
 export default function Layout() {
 	return (
 		<div className="flex h-full pt-12 flex-col bg-[#f2f2f7] dark:bg-black safe-top safe-x">
-			{/* Page content */}
 			<main className="flex-1 overflow-y-auto ios-scroll px-4 pt-4 pb-24">
 				<Outlet />
 			</main>
 
-			{/* Tab bar */}
 			<nav className="fixed inset-x-0 bottom-0 z-40 border-t pb-6 border-gray-300/60 bg-[#f2f2f7]/80 backdrop-blur-xl dark:border-white/[0.08] dark:bg-black/80 safe-bottom safe-x">
 				<ul className="mx-auto flex max-w-md justify-around">
 					{navItems.map(({ to, label, Icon }) => (
