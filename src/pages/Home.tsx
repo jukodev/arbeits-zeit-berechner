@@ -29,6 +29,7 @@ import {
 	formatDuration,
 	calcDuration,
 	isoToTimeStr,
+	getRequiredBreakMinutes,
 } from "../lib/time";
 import {
 	todayISO,
@@ -116,7 +117,12 @@ export default function Home() {
 	const handleBuzzerPress = () => {
 		setAdjustedTime(getCurrentTimeStr());
 		if (session) {
-			setBreakMinutes(0);
+			const grossMinutes =
+				parseTime(getCurrentTimeStr()) -
+				parseTime(isoToTimeStr(session.startTime));
+			setBreakMinutes(
+				getRequiredBreakMinutes(todayMinutes + grossMinutes),
+			);
 			setShowStopModal(true);
 		} else {
 			setShowStartModal(true);
@@ -154,6 +160,10 @@ export default function Home() {
 		const nowMin = parseTime(now);
 		sessionElapsed = Math.max(0, nowMin - startMin);
 	}
+
+	const sessionBreak = session
+		? getRequiredBreakMinutes(todayMinutes + sessionElapsed)
+		: 0;
 
 	// Helper: check if a date is a holiday (user-set or public)
 	const isHoliday = (dateStr: string): boolean => {
@@ -252,7 +262,13 @@ export default function Home() {
 					</div>
 					<p className="text-xl font-bold tabular-nums text-gray-900 dark:text-white">
 						{formatDuration(
-							todayMinutes + (session ? sessionElapsed : 0),
+							todayMinutes +
+								(session ? sessionElapsed - sessionBreak : 0),
+						)}
+						{session && sessionBreak > 0 && (
+							<span className="ml-1 text-sm font-normal text-orange-500">
+								(+{sessionBreak}m Pause)
+							</span>
 						)}
 					</p>
 				</GlassCard>
@@ -319,13 +335,41 @@ export default function Home() {
 										{(dailyTarget / 60).toFixed(1)}h
 									</span>
 								) : worked > 0 ? (
-									<span className="font-bold tabular-nums text-gray-900 dark:text-white">
-										{(worked / 60).toFixed(1)}h
-									</span>
+									<>
+										<span className="font-bold tabular-nums text-gray-900 dark:text-white">
+											{(
+												(worked -
+													(isTodayDay && session
+														? sessionBreak
+														: 0)) /
+												60
+											).toFixed(1)}
+											h
+										</span>
+										{isTodayDay &&
+											session &&
+											sessionBreak > 0 && (
+												<span className="text-[9px] tabular-nums text-orange-500">
+													+{sessionBreak}m
+												</span>
+											)}
+									</>
 								) : planned > 0 ? (
-									<span className="tabular-nums text-gray-400 dark:text-gray-500">
-										{(planned / 60).toFixed(1)}h
-									</span>
+									<>
+										<span className="tabular-nums text-gray-400 dark:text-gray-500">
+											{(planned / 60).toFixed(1)}h
+										</span>
+										{getRequiredBreakMinutes(planned) >
+											0 && (
+											<span className="text-[9px] tabular-nums text-orange-400 dark:text-orange-500">
+												+
+												{getRequiredBreakMinutes(
+													planned,
+												)}
+												m
+											</span>
+										)}
+									</>
 								) : (
 									<span className="text-gray-300 dark:text-gray-600">
 										–

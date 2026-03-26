@@ -48,6 +48,13 @@ export function isoToTimeStr(iso: string): string {
 	return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
 }
 
+/** Required break minutes based on daily work time (ArbZG §4) */
+export function getRequiredBreakMinutes(workMinutes: number): number {
+	if (workMinutes > 540) return 45; // > 9h
+	if (workMinutes > 360) return 30; // > 6h
+	return 0;
+}
+
 /** Create ISO datetime from date string and time string */
 export function dateAndTimeToISO(date: string, time: string): string {
 	return `${date}T${time}:00`;
