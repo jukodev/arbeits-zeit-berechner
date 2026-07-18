@@ -213,7 +213,7 @@ export default function Home() {
 	}
 
 	return (
-		<div className="mx-auto flex max-w-md flex-col items-center gap-5 pb-6">
+		<div className="mx-auto flex w-full min-w-0 max-w-md flex-col items-center gap-5 pb-6">
 			<button
 				onClick={handleBuzzerPress}
 				className={`mt-2 flex h-40 w-40 items-center justify-center rounded-full transition-transform duration-200 active:scale-95
@@ -441,7 +441,8 @@ export default function Home() {
 							onClick={() =>
 								setBreakMinutes(b => Math.max(0, b - 5))
 							}
-							className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
+							aria-label="Pause um fÃ¼nf Minuten verkÃ¼rzen"
+							className="ios-glass-control rounded-full p-2">
 							<Minus
 								size={16}
 								className="text-gray-600 dark:text-gray-300"
@@ -452,7 +453,8 @@ export default function Home() {
 						</span>
 						<button
 							onClick={() => setBreakMinutes(b => b + 5)}
-							className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/[0.08] dark:active:bg-white/[0.12]">
+							aria-label="Pause um fÃ¼nf Minuten verlÃ¤ngern"
+							className="ios-glass-control rounded-full p-2">
 							<Plus
 								size={16}
 								className="text-gray-600 dark:text-gray-300"

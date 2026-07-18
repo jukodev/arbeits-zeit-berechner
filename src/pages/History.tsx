@@ -167,11 +167,12 @@ export default function History() {
 	}
 
 	return (
-		<div className="mx-auto flex max-w-md flex-col gap-4 pb-6">
-			<div className="flex items-center justify-between">
+		<div className="mx-auto flex w-full min-w-0 max-w-md flex-col gap-4 pb-6">
+			<div className="ios-glass-toolbar sticky top-0 z-10 -mx-2 flex items-center justify-between rounded-2xl border px-2 py-1.5">
 				<button
 					onClick={() => setWeekOffset(o => o - 1)}
-					className="rounded-full p-2 active:bg-black/5 dark:active:bg-white/10 transition-colors">
+					aria-label="Vorherige Woche"
+					className="ios-glass-control rounded-full p-2">
 					<ChevronLeft
 						size={22}
 						className="text-gray-600 dark:text-gray-300"
@@ -188,7 +189,8 @@ export default function History() {
 				</div>
 				<button
 					onClick={() => setWeekOffset(o => o + 1)}
-					className="rounded-full p-2 active:bg-black/5 dark:active:bg-white/10 transition-colors">
+					aria-label="NÃ¤chste Woche"
+					className="ios-glass-control rounded-full p-2">
 					<ChevronRight
 						size={22}
 						className="text-gray-600 dark:text-gray-300"
@@ -254,7 +256,7 @@ export default function History() {
 										onClick={() =>
 											openEditor("add", dateStr)
 										}
-										className="rounded-full p-1 transition-colors active:bg-black/5 dark:active:bg-white/10"
+										className="ios-glass-control rounded-full p-1"
 										title="Eintrag hinzufügen">
 										<Plus
 											size={16}
@@ -284,7 +286,8 @@ export default function History() {
 										onClick={() =>
 											openEditor("edit", dateStr, entry)
 										}
-										className="rounded-full p-1.5 transition-colors active:bg-black/5 dark:active:bg-white/10">
+										aria-label="Eintrag bearbeiten"
+										className="ios-glass-control rounded-full p-1.5">
 										<Pencil
 											size={14}
 											className="text-gray-400"
@@ -330,7 +333,7 @@ export default function History() {
 
 			{editor && (
 				<div className="fixed inset-0 z-50 flex flex-col bg-[#f2f2f7] dark:bg-black animate-slide-up-full">
-					<div className="flex items-center justify-between px-4 py-3 mt-10 border-b border-gray-200/80 dark:border-white/[0.08]">
+					<div className="ios-glass-toolbar mt-10 flex items-center justify-between border-b px-4 py-3">
 						<button
 							onClick={closeEditor}
 							className="min-w-[80px] text-left text-[17px] text-blue-500">
@@ -405,7 +408,8 @@ export default function History() {
 													: e,
 											)
 										}
-										className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/10 dark:active:bg-white/20">
+										aria-label="Pause um fÃ¼nf Minuten verkÃ¼rzen"
+										className="ios-glass-control rounded-full p-2">
 										<Minus
 											size={16}
 											className="text-gray-600 dark:text-gray-300"
@@ -427,7 +431,8 @@ export default function History() {
 													: e,
 											)
 										}
-										className="rounded-full bg-gray-100 p-2 active:bg-gray-200 dark:bg-white/10 dark:active:bg-white/20">
+										aria-label="Pause um fÃ¼nf Minuten verlÃ¤ngern"
+										className="ios-glass-control rounded-full p-2">
 										<Plus
 											size={16}
 											className="text-gray-600 dark:text-gray-300"

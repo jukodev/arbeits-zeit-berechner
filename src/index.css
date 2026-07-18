@@ -27,6 +27,11 @@ body {
 		-apple-system, BlinkMacSystemFont, "SF Pro", "SF Pro Display",
 		"Helvetica Neue", Arial, sans-serif;
 	overflow: hidden;
+	color: #111827;
+}
+
+.dark body {
+	color: #f9fafb;
 }
 
 /* iOS-native elastic/bounce scrolling for scrollable containers */
@@ -39,6 +44,401 @@ body {
 	position: relative;
 	box-sizing: border-box;
 	overflow: hidden;
+}
+
+.app-shell {
+	width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	padding-top: max(2.5rem, env(safe-area-inset-top, 0px));
+}
+
+/* ---- Liquid Glass app chrome ---- */
+.liquid-glass-nav-shell {
+	position: fixed;
+	z-index: 40;
+	left: max(12px, env(safe-area-inset-left, 0px));
+	right: max(12px, env(safe-area-inset-right, 0px));
+	bottom: max(4px, calc(env(safe-area-inset-bottom, 0px) - 16px));
+	display: flex;
+	justify-content: center;
+	box-sizing: border-box;
+	pointer-events: none;
+}
+
+.liquid-glass-nav {
+	--glass-width: calc((100% / var(--tab-count)) - 6px);
+	--glass-x: 3px;
+	--glass-stretch: 1;
+	--glass-skew: 0deg;
+
+	position: relative;
+	isolation: isolate;
+	display: grid;
+	grid-template-columns: repeat(var(--tab-count), minmax(0, 1fr));
+	width: 100%;
+	min-width: 0;
+	max-width: 430px;
+	height: 64px;
+	border-radius: 32px;
+	contain: layout style;
+	pointer-events: auto;
+	touch-action: none;
+	user-select: none;
+}
+
+.liquid-glass-nav__backplate {
+	position: absolute;
+	z-index: 0;
+	inset: 0;
+	border: 0.5px solid color-mix(in srgb, white 44%, #c7c7cc);
+	border-radius: 32px;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 42%),
+		rgba(236, 236, 241, 0.54);
+	box-shadow:
+		0 10px 30px rgba(0, 0, 0, 0.13),
+		0 2px 7px rgba(0, 0, 0, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28);
+	-webkit-backdrop-filter: blur(24px) saturate(155%) brightness(1.04);
+	backdrop-filter: blur(24px) saturate(155%) brightness(1.04);
+	transform: translateZ(0) scale(1);
+	transform-origin: center bottom;
+	transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+	will-change: transform;
+	pointer-events: none;
+}
+
+.liquid-glass-nav__backplate::after {
+	position: absolute;
+	inset: 1px;
+	border: 0.5px solid rgba(255, 255, 255, 0.15);
+	border-radius: inherit;
+	content: "";
+	pointer-events: none;
+}
+
+.liquid-glass-nav[data-moving="true"] .liquid-glass-nav__backplate {
+	transform: translateZ(0) scale(1.025);
+}
+
+.liquid-glass-nav__lens {
+	position: absolute;
+	z-index: 1;
+	top: 4px;
+	bottom: 4px;
+	left: 0;
+	width: var(--glass-width);
+	border: 0.5px solid rgba(255, 255, 255, 0.42);
+	border-radius: 28px;
+	background:
+		linear-gradient(
+			155deg,
+			rgba(255, 255, 255, 0.3),
+			rgba(255, 255, 255, 0.065) 48%,
+			rgba(255, 255, 255, 0.1)
+		),
+		rgba(255, 255, 255, 0.2);
+	box-shadow: 0 3px 11px rgba(0, 0, 0, 0.08);
+	-webkit-backdrop-filter: blur(9px) saturate(165%) brightness(1.08);
+	backdrop-filter: blur(9px) saturate(165%) brightness(1.08);
+	transform: translate3d(var(--glass-x), 0, 0)
+		scaleX(var(--glass-stretch)) skewX(var(--glass-skew));
+	transform-origin: center;
+	transition: transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+	will-change: transform;
+	pointer-events: none;
+}
+
+.liquid-glass-nav[data-dragging="true"] .liquid-glass-nav__lens {
+	background:
+		linear-gradient(
+			155deg,
+			rgba(255, 255, 255, 0.34),
+			rgba(255, 255, 255, 0.09) 48%,
+			rgba(255, 255, 255, 0.13)
+		),
+		rgba(255, 255, 255, 0.23);
+	transition: none;
+}
+
+.liquid-glass-nav__item {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 2px;
+	border-radius: 28px;
+	color: #7c7c82;
+	font-size: 10.5px;
+	font-weight: 550;
+	line-height: 1.1;
+	text-align: center;
+	text-decoration: none;
+	transition: color 180ms ease-out;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.liquid-glass-nav__item svg {
+	flex: none;
+	transform: translateZ(0) scale(0.96);
+	transition: transform 180ms ease-out;
+}
+
+.liquid-glass-nav__item[data-selected="true"] {
+	color: #111827;
+}
+
+.liquid-glass-nav__item[data-selected="true"] svg {
+	transform: translateZ(0) scale(1);
+}
+
+.liquid-glass-nav__item:focus-visible,
+.ios-glass-control:focus-visible,
+.ios-glass-chip:focus-visible,
+.ios-glass-segmented__item:focus-visible {
+	outline: 2px solid #3b82f6;
+	outline-offset: 2px;
+}
+
+.dark .liquid-glass-nav__backplate {
+	border-color: rgba(255, 255, 255, 0.075);
+	background: rgba(8, 8, 10, 0.46);
+	box-shadow:
+		0 10px 28px rgba(0, 0, 0, 0.28),
+		0 1px 4px rgba(0, 0, 0, 0.18);
+	-webkit-backdrop-filter: blur(24px) saturate(118%) brightness(0.72);
+	backdrop-filter: blur(24px) saturate(118%) brightness(0.72);
+}
+
+.dark .liquid-glass-nav__backplate::after {
+	border-color: rgba(255, 255, 255, 0.025);
+}
+
+.dark .liquid-glass-nav__lens,
+.dark .liquid-glass-nav[data-dragging="true"] .liquid-glass-nav__lens {
+	border-color: rgba(255, 255, 255, 0.085);
+	background: rgba(255, 255, 255, 0.07);
+	box-shadow: 0 2px 9px rgba(0, 0, 0, 0.2);
+	-webkit-backdrop-filter: blur(10px) saturate(110%) brightness(0.98);
+	backdrop-filter: blur(10px) saturate(110%) brightness(0.98);
+}
+
+.dark .liquid-glass-nav[data-dragging="true"] .liquid-glass-nav__lens {
+	border-color: rgba(255, 255, 255, 0.09);
+	background: rgba(255, 255, 255, 0.085);
+	box-shadow: 0 3px 11px rgba(0, 0, 0, 0.24);
+}
+
+.dark .liquid-glass-nav__item {
+	color: #797980;
+}
+
+.dark .liquid-glass-nav__item[data-selected="true"] {
+	color: #f5f5f7;
+}
+
+.dark .liquid-glass-nav__item svg {
+	filter: none;
+}
+
+/* Shared glass surfaces for functional controls and transient chrome. */
+.ios-glass-control,
+.ios-glass-chip,
+.ios-glass-segmented {
+	border: 0.5px solid rgba(255, 255, 255, 0.58);
+	background: rgba(255, 255, 255, 0.46);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+	-webkit-backdrop-filter: blur(20px) saturate(145%);
+	backdrop-filter: blur(20px) saturate(145%);
+}
+
+.ios-glass-control {
+	transition:
+		background-color 160ms ease-out,
+		transform 160ms ease-out;
+}
+
+.ios-glass-control:active {
+	transform: scale(0.96);
+}
+
+.ios-glass-chip {
+	color: #73737a;
+	transition:
+		background-color 180ms ease-out,
+		color 180ms ease-out,
+		transform 160ms ease-out;
+}
+
+.ios-glass-chip[data-selected="true"] {
+	border-color: rgba(255, 255, 255, 0.8);
+	background: rgba(255, 255, 255, 0.76);
+	color: #111827;
+	box-shadow:
+		0 4px 14px rgba(0, 0, 0, 0.09),
+		inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.ios-glass-chip:active {
+	transform: scale(0.96);
+}
+
+.ios-glass-segmented {
+	--segment-index: 0;
+	position: relative;
+	isolation: isolate;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0;
+	padding: 4px;
+	border-radius: 16px;
+}
+
+.ios-glass-segmented__selection {
+	position: absolute;
+	z-index: 0;
+	top: 4px;
+	bottom: 4px;
+	left: calc(4px + (var(--segment-index) * ((100% - 8px) / 3)));
+	width: calc((100% - 8px) / 3);
+	border: 0.5px solid rgba(255, 255, 255, 0.75);
+	border-radius: 12px;
+	background: rgba(255, 255, 255, 0.72);
+	box-shadow:
+		0 3px 10px rgba(0, 0, 0, 0.09),
+		inset 0 1px 0 rgba(255, 255, 255, 0.5);
+	transition:
+		left 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+		width 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+	pointer-events: none;
+}
+
+.ios-glass-segmented__item {
+	position: relative;
+	z-index: 1;
+	color: #73737a;
+	transition: color 180ms ease-out;
+}
+
+.ios-glass-segmented__item[data-selected="true"] {
+	color: #111827;
+}
+
+.ios-glass-toolbar {
+	border-color: rgba(255, 255, 255, 0.4);
+	background: rgba(242, 242, 247, 0.7);
+	-webkit-backdrop-filter: blur(28px) saturate(145%);
+	backdrop-filter: blur(28px) saturate(145%);
+}
+
+.ios-glass-sheet {
+	border: 0.5px solid rgba(255, 255, 255, 0.48);
+	background: rgba(248, 248, 250, 0.76);
+	box-shadow: 0 22px 55px rgba(0, 0, 0, 0.16);
+	-webkit-backdrop-filter: blur(28px) saturate(145%);
+	backdrop-filter: blur(28px) saturate(145%);
+}
+
+.dark .ios-glass-segmented,
+.dark .ios-glass-control,
+.dark .ios-glass-chip {
+	border-color: rgba(255, 255, 255, 0.07);
+	background: rgba(8, 8, 10, 0.4);
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+	-webkit-backdrop-filter: blur(20px) saturate(112%) brightness(0.74);
+	backdrop-filter: blur(20px) saturate(112%) brightness(0.74);
+}
+
+.dark .ios-glass-chip[data-selected="true"],
+.dark .ios-glass-segmented__selection {
+	border-color: rgba(255, 255, 255, 0.085);
+	background: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 2px 9px rgba(0, 0, 0, 0.2);
+}
+
+.dark .ios-glass-chip[data-selected="true"],
+.dark .ios-glass-segmented__item[data-selected="true"] {
+	color: #f5f5f7;
+}
+
+.dark .ios-glass-toolbar,
+.dark .ios-glass-sheet {
+	border-color: rgba(255, 255, 255, 0.075);
+	background: rgba(9, 9, 11, 0.58);
+	box-shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
+	-webkit-backdrop-filter: blur(28px) saturate(112%) brightness(0.72);
+	backdrop-filter: blur(28px) saturate(112%) brightness(0.72);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+	.liquid-glass-nav__backplate,
+	.ios-glass-control,
+	.ios-glass-chip,
+	.ios-glass-segmented,
+	.ios-glass-toolbar,
+	.ios-glass-sheet {
+		background: rgba(245, 245, 247, 0.96);
+	}
+
+	.liquid-glass-nav__lens,
+	.ios-glass-segmented__selection {
+		background: rgba(255, 255, 255, 0.94);
+	}
+
+	.dark .liquid-glass-nav__backplate,
+	.dark .ios-glass-control,
+	.dark .ios-glass-chip,
+	.dark .ios-glass-segmented,
+	.dark .ios-glass-toolbar,
+	.dark .ios-glass-sheet {
+		background: rgba(14, 14, 16, 0.96);
+	}
+
+	.dark .liquid-glass-nav__lens,
+	.dark .ios-glass-segmented__selection {
+		background: rgba(42, 42, 45, 0.98);
+	}
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.liquid-glass-nav__backplate,
+	.ios-glass-control,
+	.ios-glass-chip,
+	.ios-glass-segmented,
+	.ios-glass-toolbar,
+	.ios-glass-sheet {
+		background: rgba(245, 245, 247, 0.92);
+	}
+
+	.dark .liquid-glass-nav__backplate,
+	.dark .ios-glass-control,
+	.dark .ios-glass-chip,
+	.dark .ios-glass-segmented,
+	.dark .ios-glass-toolbar,
+	.dark .ios-glass-sheet {
+		background: rgba(12, 12, 14, 0.92);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.liquid-glass-nav__lens,
+	.liquid-glass-nav__backplate,
+	.liquid-glass-nav__item,
+	.liquid-glass-nav__item svg,
+	.ios-glass-control,
+	.ios-glass-chip,
+	.ios-glass-segmented__selection {
+		transition-duration: 1ms !important;
+	}
+
+	.animate-slide-up,
+	.animate-slide-up-full {
+		animation-duration: 1ms;
+	}
 }
 
 @supports (height: 100lvh) {

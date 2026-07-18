@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type CSSProperties } from "react";
 import { Sun, Moon, Monitor, Plus, X, Gift, Calendar } from "lucide-react";
 import GlassCard from "../components/GlassCard";
 import Modal from "../components/Modal";
@@ -82,7 +82,7 @@ export default function Settings() {
 	};
 
 	return (
-		<div className="mx-auto flex max-w-md flex-col gap-5 pb-6">
+		<div className="mx-auto flex w-full min-w-0 max-w-md flex-col gap-5 pb-6">
 			<GlassCard className="p-5">
 				<label className="flex items-center justify-between">
 					<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -122,11 +122,9 @@ export default function Settings() {
 							<button
 								key={key}
 								onClick={() => toggleDay(key)}
-								className={`rounded-xl py-2.5 text-xs font-semibold transition-all active:scale-95 ${
-									active
-										? "bg-blue-500 text-white"
-										: "bg-gray-100 text-gray-400 dark:bg-white/[0.06] dark:text-gray-500"
-								}`}>
+								data-selected={active ? "true" : "false"}
+								aria-pressed={active}
+								className="ios-glass-chip rounded-xl py-2.5 text-xs font-semibold">
 								{label}
 							</button>
 						);
@@ -138,7 +136,17 @@ export default function Settings() {
 				<p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 					Erscheinungsbild
 				</p>
-				<div className="grid grid-cols-3 gap-2">
+				<div
+					className="ios-glass-segmented"
+					style={{
+						"--segment-index": ["light", "dark", "system"].indexOf(
+							settings.theme,
+						),
+					} as CSSProperties}>
+					<span
+						className="ios-glass-segmented__selection"
+						aria-hidden="true"
+					/>
 					{(
 						[
 							{ value: "light", label: "Hell", Icon: Sun },
@@ -151,11 +159,9 @@ export default function Settings() {
 							<button
 								key={value}
 								onClick={() => updateSettings({ theme: value })}
-								className={`flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-semibold transition-all active:scale-95 ${
-									active
-										? "bg-blue-500 text-white"
-										: "bg-gray-100 text-gray-500 dark:bg-white/[0.06] dark:text-gray-400"
-								}`}>
+								data-selected={active ? "true" : "false"}
+								aria-pressed={active}
+								className="ios-glass-segmented__item flex flex-col items-center gap-1.5 rounded-xl py-3 text-xs font-semibold">
 								<Icon size={20} />
 								{label}
 							</button>
