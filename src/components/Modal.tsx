@@ -32,7 +32,7 @@ export default function Modal({
 	if (!open) return null;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-end justify-center px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] sm:items-center">
+		<div className="fixed inset-0 z-50 flex items-end justify-center px-4 pt-4 pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:items-center sm:pb-4">
 			<div
 				className="absolute inset-0 bg-black/25 backdrop-blur-sm dark:bg-black/45"
 				onClick={onClose}
