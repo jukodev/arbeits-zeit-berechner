@@ -8,6 +8,7 @@ import {
 	CalendarDays,
 	TrendingUp,
 	Gift,
+	AlertTriangle,
 } from "lucide-react";
 import GlassCard from "../components/GlassCard";
 import Modal from "../components/Modal";
@@ -30,6 +31,8 @@ import {
 	calcDuration,
 	isoToTimeStr,
 	getRequiredBreakMinutes,
+	getRequiredBreakMinutesForElapsed,
+	getLatestClockOutTime,
 } from "../lib/time";
 import {
 	todayISO,
@@ -120,7 +123,7 @@ export default function Home() {
 				parseTime(getCurrentTimeStr()) -
 				parseTime(isoToTimeStr(session.startTime));
 			setBreakMinutes(
-				getRequiredBreakMinutes(todayMinutes + grossMinutes),
+				getRequiredBreakMinutesForElapsed(grossMinutes, todayMinutes),
 			);
 			setShowStopModal(true);
 		} else {
@@ -150,7 +153,7 @@ export default function Home() {
 		await loadStats();
 	};
 
-	const remaining = Math.max(0, weekTarget - weekMinutes);
+	const remaining = weekTarget - weekMinutes;
 	const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
 
 	let sessionElapsed = 0;
@@ -161,7 +164,7 @@ export default function Home() {
 	}
 
 	const sessionBreak = session
-		? getRequiredBreakMinutes(todayMinutes + sessionElapsed)
+		? getRequiredBreakMinutesForElapsed(sessionElapsed, todayMinutes)
 		: 0;
 
 	const isHoliday = (dateStr: string): boolean => {
@@ -173,13 +176,41 @@ export default function Home() {
 
 	const holidayMinutes = weekDates.reduce((sum, d) => {
 		const dateStr = formatDateISO(d);
-		return sum + (isHoliday(dateStr) ? dailyTarget : 0);
+		const isWorkday = d.getDay() !== 0 && d.getDay() !== 6;
+		return sum +
+			(isWorkday && settings.activeDays[getDayKey(d)] && isHoliday(dateStr)
+				? dailyTarget
+				: 0);
 	}, 0);
 
-	const liveRemaining = Math.max(
-		0,
-		remaining - (session ? sessionElapsed : 0) - holidayMinutes,
+	const liveWorkedMinutes = session
+		? Math.max(0, sessionElapsed - sessionBreak)
+		: 0;
+	const liveRemaining = remaining - liveWorkedMinutes - holidayMinutes;
+	const remainingDisplay = settings.enforceWeeklyMaximum
+		? liveRemaining
+		: Math.max(0, liveRemaining);
+	const latestClockOut = getLatestClockOutTime(
+		session ? isoToTimeStr(session.startTime) : now,
+		todayMinutes,
+		remaining - holidayMinutes,
 	);
+	const showLimitWarning =
+		settings.enforceWeeklyMaximum && liveRemaining <= 60;
+	const isLastWorkday =
+		settings.activeDays[getDayKey(weekDates[todayIdx])] &&
+		!isHoliday(today) &&
+		!weekDates.slice(todayIdx + 1).some(
+			d =>
+				settings.activeDays[getDayKey(d)] &&
+				!isHoliday(formatDateISO(d)),
+		);
+	const showLastWorkdayHint =
+		settings.enforceWeeklyMaximum &&
+		!!session &&
+		session.date === today &&
+		isLastWorkday &&
+		!showLimitWarning;
 
 	const todayWorked = todayMinutes > 0 || !!session;
 
@@ -199,7 +230,7 @@ export default function Home() {
 
 	const perDay =
 		remainingActiveDays.length > 0
-			? Math.ceil(liveRemaining / remainingActiveDays.length)
+			? Math.ceil(Math.max(0, liveRemaining) / remainingActiveDays.length)
 			: 0;
 
 	let stopDuration = 0;
@@ -246,6 +277,41 @@ export default function Home() {
 				</div>
 			)}
 
+			{showLastWorkdayHint && (
+				<div
+					role="status"
+					className="w-full rounded-2xl bg-blue-50/70 px-4 py-3 text-blue-800 dark:bg-blue-500/10 dark:text-blue-200">
+					<p className="text-sm font-medium">Letzter Arbeitstag dieser Woche</p>
+					<p className="mt-1 text-sm">
+						Spätestens um {latestClockOut} Uhr ausstempeln (2 Min Puffer).
+					</p>
+				</div>
+			)}
+
+			{showLimitWarning && (
+				<div
+					role={liveRemaining < 0 ? "alert" : "status"}
+					className={`w-full rounded-2xl border p-4 ${
+						liveRemaining < 0
+							? "border-red-300 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300"
+							: "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300"
+					}`}>
+					<div className="flex items-center gap-2 font-semibold">
+						<AlertTriangle size={18} />
+						{liveRemaining < 0
+							? `Wochenlimit um ${formatDuration(-liveRemaining)} überschritten`
+							: `Nur noch ${formatDuration(remainingDisplay)} bis zum Wochenlimit`}
+					</div>
+					<p className="mt-1 text-sm">
+						{latestClockOut
+							? parseTime(latestClockOut) < parseTime(now)
+								? `Letzter Stempelzeitpunkt war ${latestClockOut} Uhr (2 Min Puffer).`
+								: `${session ? "" : "Bei Start jetzt: "}Spätestens um ${latestClockOut} Uhr ausstempeln (2 Min Puffer).`
+							: "Kein Stempelzeitpunkt mit 2 Min Puffer verbleibt."}
+					</p>
+				</div>
+			)}
+
 			<div className="grid w-full grid-cols-2 gap-3">
 				<GlassCard className="p-4">
 					<div className="mb-1 flex items-center gap-2 text-gray-500 dark:text-gray-400">
@@ -272,7 +338,7 @@ export default function Home() {
 					</div>
 					<p className="text-xl font-bold tabular-nums text-gray-900 dark:text-white">
 						{formatDuration(
-							weekMinutes + (session ? sessionElapsed : 0),
+							weekMinutes + liveWorkedMinutes,
 						)}
 					</p>
 				</GlassCard>
@@ -286,7 +352,7 @@ export default function Home() {
 					</span>
 				</div>
 				<p className="mb-3 text-2xl font-bold tabular-nums text-gray-900 dark:text-white">
-					{formatDuration(liveRemaining)}
+					{formatDuration(remainingDisplay)}
 				</p>
 
 				<div className="grid grid-cols-7 gap-1">
@@ -302,7 +368,8 @@ export default function Home() {
 								? rawWorked + sessionElapsed
 								: rawWorked;
 						const dayIsHoliday = isHoliday(dateStr);
-						const planned = dayIsHoliday
+						const creditedHoliday = dayIsHoliday && active && i < 5;
+						const planned = creditedHoliday
 							? dailyTarget
 							: !isPast && active && (!isTodayDay || !todayWorked)
 								? perDay
@@ -320,7 +387,7 @@ export default function Home() {
 									className={`font-medium ${dayIsHoliday ? "text-amber-600 dark:text-amber-400" : "text-gray-500 dark:text-gray-400"}`}>
 									{dayNameShort(i)}
 								</span>
-								{dayIsHoliday && worked === 0 ? (
+								{creditedHoliday && worked === 0 ? (
 									<span className="flex items-center gap-0.5 tabular-nums text-amber-500 dark:text-amber-400">
 										<Gift size={8} />
 										{(dailyTarget / 60).toFixed(1)}h

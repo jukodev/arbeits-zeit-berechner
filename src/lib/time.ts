@@ -36,6 +36,29 @@ export function addMinutesToTime(time: string, mins: number): string {
 	return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
+export function getLatestClockOutTime(
+	start: string,
+	alreadyWorkedMinutes: number,
+	availableMinutes: number,
+): string | null {
+	const startMinute = parseTime(start);
+	const maxNetMinutes = Math.floor(availableMinutes - 2);
+	if (maxNetMinutes < 0) return null;
+
+	const breakMinutes = getRequiredBreakMinutes(
+		alreadyWorkedMinutes + maxNetMinutes,
+	);
+	const endMinute = Math.min(
+		startMinute + maxNetMinutes + breakMinutes,
+		23 * 60 + 59,
+	);
+	return `${Math.floor(endMinute / 60)
+		.toString()
+		.padStart(2, "0")}:${(endMinute % 60)
+		.toString()
+		.padStart(2, "0")}`;
+}
+
 export function isoToTimeStr(iso: string): string {
 	const d = new Date(iso);
 	return `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
@@ -45,6 +68,16 @@ export function getRequiredBreakMinutes(workMinutes: number): number {
 	if (workMinutes > 540) return 45;
 	if (workMinutes > 360) return 30;
 	return 0;
+}
+
+export function getRequiredBreakMinutesForElapsed(
+	grossMinutes: number,
+	alreadyWorkedMinutes: number,
+): number {
+	const totalGrossMinutes = alreadyWorkedMinutes + grossMinutes;
+	if (totalGrossMinutes <= 360) return 0;
+	if (totalGrossMinutes - 30 > 540) return 45;
+	return 30;
 }
 
 export function dateAndTimeToISO(date: string, time: string): string {

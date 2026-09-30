@@ -11,6 +11,7 @@ export interface TimeEntry {
 export interface Settings {
 	key: string;
 	weeklyTargetHours: number;
+	enforceWeeklyMaximum: boolean;
 	activeDays: {
 		mon: boolean;
 		tue: boolean;
@@ -68,6 +69,7 @@ export function getDB(): Promise<IDBPDatabase<AZBDatabase>> {
 export const DEFAULT_SETTINGS: Settings = {
 	key: "settings",
 	weeklyTargetHours: 40,
+	enforceWeeklyMaximum: false,
 	activeDays: {
 		mon: true,
 		tue: true,

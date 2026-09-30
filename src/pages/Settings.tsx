@@ -112,6 +112,38 @@ export default function Settings() {
 			</GlassCard>
 
 			<GlassCard className="p-5">
+				<div className="flex items-center justify-between gap-4">
+					<span>
+						<span className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+							Wochenlimit einhalten
+						</span>
+						<span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
+							Warnt eine Stunde vor dem Limit und zeigt die letzte Stempelzeit mit 2 Minuten Puffer.
+						</span>
+					</span>
+					<button
+						type="button"
+						role="switch"
+						aria-label="Wochenlimit einhalten"
+						aria-checked={settings.enforceWeeklyMaximum}
+						onClick={() =>
+							updateSettings({ enforceWeeklyMaximum: !settings.enforceWeeklyMaximum })
+						}
+						className={`flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors ${
+							settings.enforceWeeklyMaximum
+								? "bg-blue-500"
+								: "bg-gray-300 dark:bg-gray-600"
+						}`}>
+						<span
+							className={`h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+								settings.enforceWeeklyMaximum ? "translate-x-5" : ""
+							}`}
+						/>
+					</button>
+				</div>
+			</GlassCard>
+
+			<GlassCard className="p-5">
 				<p className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
 					Arbeitstage
 				</p>
@@ -183,7 +215,7 @@ export default function Settings() {
 					</button>
 				</div>
 				<p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
-					An Feiertagen wird automatisch 1/5 der Wochenstunden
+					An Feiertagen auf aktiven Arbeitstagen (Mo–Fr) wird automatisch 1/5 der Wochenstunden
 					angenommen.
 					<br />
 					<span className="text-amber-600 dark:text-amber-400">
