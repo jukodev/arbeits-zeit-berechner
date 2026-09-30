@@ -10,6 +10,7 @@ import {
 	formatDateDisplay,
 } from "../lib/dates";
 import { fetchBavarianHolidays, type PublicHoliday } from "../lib/holidays";
+import { enablePush } from "../lib/push";
 
 const DAY_LABELS = Array.from({ length: 7 }, (_, i) => ({
 	key: dayKeyFromIndex(i) as DayKey,
@@ -21,6 +22,7 @@ export default function Settings() {
 	const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([]);
 	const [showAddHoliday, setShowAddHoliday] = useState(false);
 	const [newHolidayDate, setNewHolidayDate] = useState("");
+	const [pushStatus, setPushStatus] = useState("");
 
 	useEffect(() => {
 		const year = new Date().getFullYear();
@@ -140,6 +142,24 @@ export default function Settings() {
 							}`}
 						/>
 					</button>
+				</div>
+			</GlassCard>
+
+			<GlassCard className="p-5">
+				<p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">Push-Mitteilungen</p>
+				<p className="mb-3 text-xs text-gray-500 dark:text-gray-400">Auf dem iPhone die App zum Home-Bildschirm hinzufügen und dort öffnen. Server und Token eintragen, dann Mitteilungen aktivieren.</p>
+				<div className="space-y-3">
+					<input type="url" aria-label="Push-Server URL" placeholder="https://push.example.com" value={settings.pushBackendUrl}
+						onChange={e => updateSettings({ pushBackendUrl: e.target.value })}
+						className="w-full rounded-xl border border-black/10 bg-white/80 px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-white/[0.08] dark:text-white" />
+					<input type="password" aria-label="Push-Token" placeholder="Token" value={settings.pushToken}
+						onChange={e => updateSettings({ pushToken: e.target.value })}
+						className="w-full rounded-xl border border-black/10 bg-white/80 px-3 py-2 text-sm text-gray-900 dark:border-white/10 dark:bg-white/[0.08] dark:text-white" />
+					<button type="button" onClick={() => {
+						setPushStatus("");
+						void enablePush(settings).then(() => setPushStatus("Mitteilungen aktiviert.")).catch(error => setPushStatus(error instanceof Error ? error.message : "Aktivierung fehlgeschlagen."));
+					}} className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-medium text-white">Mitteilungen aktivieren</button>
+					{pushStatus && <p role="status" className="text-xs text-gray-600 dark:text-gray-300">{pushStatus}</p>}
 				</div>
 			</GlassCard>
 

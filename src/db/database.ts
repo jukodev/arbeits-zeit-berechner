@@ -23,6 +23,8 @@ export interface Settings {
 	};
 	theme: "light" | "dark" | "system";
 	holidays: string[];
+	pushBackendUrl: string;
+	pushToken: string;
 }
 
 export interface ActiveSession {
@@ -81,4 +83,6 @@ export const DEFAULT_SETTINGS: Settings = {
 	},
 	theme: "system",
 	holidays: [],
+	pushBackendUrl: "",
+	pushToken: "",
 };

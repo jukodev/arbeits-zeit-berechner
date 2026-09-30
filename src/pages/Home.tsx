@@ -45,6 +45,7 @@ import {
 } from "../lib/dates";
 import { fetchBavarianHolidays, type PublicHoliday } from "../lib/holidays";
 import type { ActiveSession } from "../db/database";
+import { buildPushTimes, cancelPush, retryPushCancellation, schedulePush } from "../lib/push";
 
 export default function Home() {
 	const { settings } = useSettings();
@@ -60,6 +61,7 @@ export default function Home() {
 	>({});
 	const [publicHolidays, setPublicHolidays] = useState<PublicHoliday[]>([]);
 	const [now, setNow] = useState(getCurrentTimeStr());
+	const [pushError, setPushError] = useState("");
 	const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
 	const today = todayISO();
@@ -104,6 +106,10 @@ export default function Home() {
 	}, [loadSession, loadStats]);
 
 	useEffect(() => {
+		if (settings.pushBackendUrl && settings.pushToken) void retryPushCancellation(settings).catch(() => {});
+	}, [settings]);
+
+	useEffect(() => {
 		const year = new Date().getFullYear();
 		fetchBavarianHolidays(year).then(setPublicHolidays);
 	}, []);
@@ -136,6 +142,16 @@ export default function Home() {
 		await startSession(iso, today);
 		await loadSession();
 		setShowStartModal(false);
+		setPushError("");
+		const available = remaining - holidayMinutes;
+		if (settings.enforceWeeklyMaximum && (isLastWorkday || available < 240)) {
+			const finalClockOut = getLatestClockOutTime(adjustedTime, todayMinutes, available);
+			if (finalClockOut) {
+				const finalTime = new Date(`${today}T${finalClockOut}:00`);
+				try { await schedulePush(settings, buildPushTimes(finalTime)); }
+				catch (error) { setPushError(error instanceof Error ? error.message : "Push-Planung fehlgeschlagen."); }
+			}
+		}
 	};
 
 	const confirmStop = async () => {
@@ -148,6 +164,8 @@ export default function Home() {
 			breakMinutes,
 		});
 		await clearSession();
+		try { await cancelPush(settings); setPushError(""); }
+		catch (error) { setPushError(error instanceof Error ? `${error.message} — Löschung wird beim nächsten Öffnen erneut versucht.` : "Push-Löschung wird erneut versucht."); }
 		setSession(undefined);
 		setShowStopModal(false);
 		await loadStats();
@@ -245,6 +263,7 @@ export default function Home() {
 
 	return (
 		<div className="mx-auto flex w-full min-w-0 max-w-md flex-col items-center gap-5 pb-6">
+			{pushError && <div role="alert" className="w-full rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">{pushError}</div>}
 			<button
 				onClick={handleBuzzerPress}
 				className={`mt-2 flex h-40 w-40 items-center justify-center rounded-full transition-transform duration-200 active:scale-95
