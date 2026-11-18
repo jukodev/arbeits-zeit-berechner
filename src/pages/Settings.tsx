@@ -120,7 +120,7 @@ export default function Settings() {
 							Wochenlimit einhalten
 						</span>
 						<span className="mt-1 block text-xs text-gray-500 dark:text-gray-400">
-							Warnt eine Stunde vor dem Limit und zeigt die letzte Stempelzeit mit 2 Minuten Puffer.
+							Warnt bei weniger als vier Stunden Restzeit und zeigt die letzte Stempelzeit mit 2 Minuten Puffer.
 						</span>
 					</span>
 					<button

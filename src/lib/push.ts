@@ -29,13 +29,28 @@ function decodeVapid(key: string): Uint8Array<ArrayBuffer> {
 	return Uint8Array.from(raw, char => char.charCodeAt(0));
 }
 
+async function getPushWorker() {
+	if (!navigator.serviceWorker) throw new Error("Push benötigt HTTPS und einen Service Worker.");
+	let timeout: ReturnType<typeof setTimeout> | undefined;
+	try {
+		return await Promise.race([
+			navigator.serviceWorker.ready,
+			new Promise<never>((_, reject) => {
+				timeout = setTimeout(() => reject(new Error("Der Service Worker ist nicht bereit. Installierte App aktualisieren und erneut öffnen.")), 15000);
+			}),
+		]);
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
 export async function enablePush(settings: Settings): Promise<void> {
 	if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window))
 		throw new Error("Push wird auf diesem Gerät nicht unterstützt.");
 	// On iOS this call must start directly from the button gesture.
 	const permission = await Notification.requestPermission();
 	if (permission !== "granted") throw new Error("Mitteilungen wurden nicht erlaubt.");
-	const registration = await navigator.serviceWorker.ready;
+	const registration = await getPushWorker();
 	const { publicKey } = await request(settings, "config", "GET") as { publicKey: string };
 	let subscription = await registration.pushManager.getSubscription();
 	if (!subscription) subscription = await registration.pushManager.subscribe({
@@ -46,7 +61,7 @@ export async function enablePush(settings: Settings): Promise<void> {
 
 export async function schedulePush(settings: Settings, messages: PushMessage[]): Promise<void> {
 	if (!messages.length) return;
-	const registration = await navigator.serviceWorker.ready;
+	const registration = await getPushWorker();
 	const subscription = await registration.pushManager.getSubscription();
 	if (!subscription) throw new Error("Push-Mitteilungen zuerst in den Einstellungen aktivieren.");
 	await request(settings, "schedule", "PUT", { subscription: subscription.toJSON(), messages });

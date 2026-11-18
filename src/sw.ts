@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope & { __WB_MANIFEST: Array<string | { url: string; revision: string | null }> };
 const cacheName = "azb-static-v2";
-const precacheUrls = self.__WB_MANIFEST.map(entry => typeof entry === "string" ? entry : entry.url);
+const precacheUrls = [...new Set(self.__WB_MANIFEST.map(entry => typeof entry === "string" ? entry : entry.url))];
 self.addEventListener("install", event => {
 	event.waitUntil(caches.open(cacheName).then(cache => cache.addAll(precacheUrls)).then(() => self.skipWaiting()));
 });

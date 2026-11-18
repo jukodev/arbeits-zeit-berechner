@@ -40,18 +40,19 @@ export function getLatestClockOutTime(
 	start: string,
 	alreadyWorkedMinutes: number,
 	availableMinutes: number,
+	alreadyTakenBreak = 0,
+	capAtMidnight = true,
 ): string | null {
 	const startMinute = parseTime(start);
 	const maxNetMinutes = Math.floor(availableMinutes - 2);
 	if (maxNetMinutes < 0) return null;
 
-	const breakMinutes = getRequiredBreakMinutes(
+	const breakMinutes = Math.max(0, getRequiredBreakMinutes(
 		alreadyWorkedMinutes + maxNetMinutes,
-	);
-	const endMinute = Math.min(
-		startMinute + maxNetMinutes + breakMinutes,
-		23 * 60 + 59,
-	);
+	) - alreadyTakenBreak);
+	const deadline = startMinute + maxNetMinutes + breakMinutes;
+	if (!capAtMidnight && deadline > 23 * 60 + 59) return null;
+	const endMinute = Math.min(deadline, 23 * 60 + 59);
 	return `${Math.floor(endMinute / 60)
 		.toString()
 		.padStart(2, "0")}:${(endMinute % 60)
@@ -65,7 +66,6 @@ export function isoToTimeStr(iso: string): string {
 }
 
 export function getRequiredBreakMinutes(workMinutes: number): number {
-	if (workMinutes > 540) return 45;
 	if (workMinutes > 360) return 30;
 	return 0;
 }
@@ -73,11 +73,10 @@ export function getRequiredBreakMinutes(workMinutes: number): number {
 export function getRequiredBreakMinutesForElapsed(
 	grossMinutes: number,
 	alreadyWorkedMinutes: number,
+	alreadyTakenBreak = 0,
 ): number {
 	const totalGrossMinutes = alreadyWorkedMinutes + grossMinutes;
-	if (totalGrossMinutes <= 360) return 0;
-	if (totalGrossMinutes - 30 > 540) return 45;
-	return 30;
+	return Math.max(0, getRequiredBreakMinutes(totalGrossMinutes) - alreadyTakenBreak);
 }
 
 export function dateAndTimeToISO(date: string, time: string): string {

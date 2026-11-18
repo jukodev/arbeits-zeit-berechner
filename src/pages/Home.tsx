@@ -55,6 +55,7 @@ export default function Home() {
 	const [adjustedTime, setAdjustedTime] = useState("");
 	const [breakMinutes, setBreakMinutes] = useState(0);
 	const [todayMinutes, setTodayMinutes] = useState(0);
+	const [todayBreakMinutes, setTodayBreakMinutes] = useState(0);
 	const [weekMinutes, setWeekMinutes] = useState(0);
 	const [weekDayMinutes, setWeekDayMinutes] = useState<
 		Record<string, number>
@@ -82,6 +83,7 @@ export default function Home() {
 			0,
 		);
 		setTodayMinutes(todaySum);
+		setTodayBreakMinutes(todayEntries.reduce((sum, e) => sum + e.breakMinutes, 0));
 
 		const weekStart = formatDateISO(weekDates[0]);
 		const weekEnd = formatDateISO(weekDates[6]);
@@ -129,7 +131,7 @@ export default function Home() {
 				parseTime(getCurrentTimeStr()) -
 				parseTime(isoToTimeStr(session.startTime));
 			setBreakMinutes(
-				getRequiredBreakMinutesForElapsed(grossMinutes, todayMinutes),
+				getRequiredBreakMinutesForElapsed(grossMinutes, todayMinutes, todayBreakMinutes),
 			);
 			setShowStopModal(true);
 		} else {
@@ -144,8 +146,9 @@ export default function Home() {
 		setShowStartModal(false);
 		setPushError("");
 		const available = remaining - holidayMinutes;
-		if (settings.enforceWeeklyMaximum && (isLastWorkday || available < 240)) {
-			const finalClockOut = getLatestClockOutTime(adjustedTime, todayMinutes, available);
+		// Schedule before the app closes, even if the warning threshold is crossed later.
+		if (settings.enforceWeeklyMaximum && settings.pushBackendUrl && settings.pushToken) {
+			const finalClockOut = getLatestClockOutTime(adjustedTime, todayMinutes, available, todayBreakMinutes, isLastWorkday);
 			if (finalClockOut) {
 				const finalTime = new Date(`${today}T${finalClockOut}:00`);
 				try { await schedulePush(settings, buildPushTimes(finalTime)); }
@@ -182,7 +185,7 @@ export default function Home() {
 	}
 
 	const sessionBreak = session
-		? getRequiredBreakMinutesForElapsed(sessionElapsed, todayMinutes)
+		? getRequiredBreakMinutesForElapsed(sessionElapsed, todayMinutes, todayBreakMinutes)
 		: 0;
 
 	const isHoliday = (dateStr: string): boolean => {
@@ -212,9 +215,10 @@ export default function Home() {
 		session ? isoToTimeStr(session.startTime) : now,
 		todayMinutes,
 		remaining - holidayMinutes,
+		todayBreakMinutes,
 	);
 	const showLimitWarning =
-		settings.enforceWeeklyMaximum && liveRemaining <= 60;
+		settings.enforceWeeklyMaximum && liveRemaining < 240;
 	const isLastWorkday =
 		settings.activeDays[getDayKey(weekDates[todayIdx])] &&
 		!isHoliday(today) &&
@@ -225,10 +229,7 @@ export default function Home() {
 		);
 	const showLastWorkdayHint =
 		settings.enforceWeeklyMaximum &&
-		!!session &&
-		session.date === today &&
-		isLastWorkday &&
-		!showLimitWarning;
+		isLastWorkday;
 
 	const todayWorked = todayMinutes > 0 || !!session;
 
@@ -301,9 +302,9 @@ export default function Home() {
 					role="status"
 					className="w-full rounded-2xl bg-blue-50/70 px-4 py-3 text-blue-800 dark:bg-blue-500/10 dark:text-blue-200">
 					<p className="text-sm font-medium">Letzter Arbeitstag dieser Woche</p>
-					<p className="mt-1 text-sm">
-						Spätestens um {latestClockOut} Uhr ausstempeln (2 Min Puffer).
-					</p>
+					{!showLimitWarning && latestClockOut && <p className="mt-1 text-sm">
+						{!session && "Bei Start jetzt: "}Spätestens um {latestClockOut} Uhr ausstempeln (2 Min Puffer).
+					</p>}
 				</div>
 			)}
 
@@ -339,8 +340,7 @@ export default function Home() {
 					</div>
 					<p className="text-xl font-bold tabular-nums text-gray-900 dark:text-white">
 						{formatDuration(
-							todayMinutes +
-								(session ? sessionElapsed - sessionBreak : 0),
+							todayMinutes + liveWorkedMinutes,
 						)}
 						{session && sessionBreak > 0 && (
 							<div className="ml-1 text-sm font-normal text-orange-500">
@@ -384,7 +384,7 @@ export default function Home() {
 						const rawWorked = weekDayMinutes[dateStr] || 0;
 						const worked =
 							isTodayDay && session
-								? rawWorked + sessionElapsed
+								? rawWorked + liveWorkedMinutes
 								: rawWorked;
 						const dayIsHoliday = isHoliday(dateStr);
 						const creditedHoliday = dayIsHoliday && active && i < 5;
@@ -414,13 +414,7 @@ export default function Home() {
 								) : worked > 0 ? (
 									<>
 										<span className="font-bold tabular-nums text-gray-900 dark:text-white">
-											{(
-												(worked -
-													(isTodayDay && session
-														? sessionBreak
-														: 0)) /
-												60
-											).toFixed(1)}
+											{(worked / 60).toFixed(1)}
 											h
 										</span>
 										{isTodayDay &&
@@ -527,7 +521,7 @@ export default function Home() {
 							onClick={() =>
 								setBreakMinutes(b => Math.max(0, b - 5))
 							}
-							aria-label="Pause um fÃ¼nf Minuten verkÃ¼rzen"
+							aria-label="Pause um fünf Minuten verkürzen"
 							className="ios-glass-control rounded-full p-2">
 							<Minus
 								size={16}
@@ -539,7 +533,7 @@ export default function Home() {
 						</span>
 						<button
 							onClick={() => setBreakMinutes(b => b + 5)}
-							aria-label="Pause um fÃ¼nf Minuten verlÃ¤ngern"
+							aria-label="Pause um fünf Minuten verlängern"
 							className="ios-glass-control rounded-full p-2">
 							<Plus
 								size={16}
@@ -547,6 +541,13 @@ export default function Home() {
 							/>
 						</button>
 					</div>
+
+					{breakMinutes === 30 && (
+						<button type="button" className="text-sm font-medium text-blue-600 dark:text-blue-400"
+							onClick={() => setBreakMinutes(45)}>
+							45 Minuten Pause übernehmen
+						</button>
+					)}
 
 					<div className="rounded-xl bg-blue-50 px-4 py-2 dark:bg-blue-500/10">
 						<span className="text-sm text-blue-600 dark:text-blue-400">
